@@ -1,0 +1,94 @@
+#!/usr/local/bin/nush
+(import Foundation)
+(load "Nunja")
+
+;; An HTTP request handler. Handlers consist of an action, a pattern, and a set of statements.
+;; The action is an HTTP verb such as "get" or "post", the pattern is either an NSString
+;; or a NuRegex, and the statements are Nu expressions to be evaluated in the request handling.
+;; Request handers are typically created using the "get" or "post" macros and are responsible
+;; for setting the response headers and returning the appropriate response data, which can be
+;; either raw data (in an NSData object) or a string containing HTML text.
+(class NunjaRequestHandler is NSObject
+     (ivar (id) action (id) pattern (id) statements)
+     (ivars)
+     (ivar-accessors)
+     
+     ;; Create a handler with a specified action, pattern, and statements. Used internally.
+     (cmethod (id) handlerWithAction:(id)action pattern:(id)pattern statements:(id)statements is
+          (set handler ((self alloc) init))
+          (handler set:(action:action pattern:pattern statements:(cons 'progn statements)))
+          handler)
+     
+     ;; Try to match the handler against a specified action and path. Used internally.
+     (imethod (id)matchAction:(id)action path:(id)path is
+          (if (eq @action action)
+              (then (cond ((@pattern isKindOfClass:NSString)
+                           (set @match (eq @pattern path)))
+                          ((@pattern isKindOfClass:NuRegex)
+                           (set @match (@pattern findInString:path))
+                           (eq path (@match group)))
+                          (else nil)))
+              (else nil)))
+     
+     ;; Handle a request. Used internally.
+     (imethod (id)handleRequest:(id)request is
+          (NSLog "handling request #{(request uri)}")
+          (set response (dict))
+          (set HEAD nil)
+          (set TITLE nil)
+          (set BODY (eval @statements))
+          (set html "<head>\n")
+          (if HEAD (html appendString:HEAD))
+          (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))
+          (html appendString: (+ "</head>\n<body>\n" BODY "</body>\n"))
+          (request respondWithString:html))
+     
+     ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
+     (imethod (id)redirectResponse:(id)response toLocation:(id)location is
+          (response setObject:STATUS_SEE_OTHER forKey:"status")
+          ((response objectForKey:"headers") set: (Location: location))
+          "redirecting"))
+
+;; Declare a get action.
+(macro get
+     (set __pattern    (eval (car margs)))
+     (set __statements (cdr margs))
+     ($handlers << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__statements)))
+
+;; Declare a post action.
+(macro post
+     (set __pattern    (eval (car margs)))
+     (set __statements (cdr margs))
+     ($handlers << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__statements)))
+
+(set $handlers (array))
+
+(get "/"
+     (set TITLE "Welcome")
+     <<-END
+<h1>Hello</h1>
+<p>Welcome home.</p>
+END)
+
+(get "/about" <<-END
+<h1>About this site</h1>
+<p>Nunja!</p>
+END)
+
+(class NunjaDelegate is NSObject
+     (- (void) handleRequest:(id) request is
+        (set path (request uri))
+        (set command (request command))
+        (NSLog (+ "REQUEST " command " " path "-----"))
+        (NSLog ((request requestHeaders) description))
+        (request setValue:"Nunja" forResponseHeader:"Server")
+        
+        (set matches ($handlers select:(do (handler) (handler matchAction:command path:path))))
+        (if (matches count)
+            (then ((matches 0) handleRequest:request))
+            (else (request respondWithCode:404 message:"Not Found" string:"Not Found. You requested: #{(request uri)}")))))
+
+(set n ((Nunja alloc) init))
+(n bindToAddress:"0.0.0.0" port:3000)
+(n setDelegate:((NunjaDelegate alloc) init))
+(n run)
