@@ -28,7 +28,7 @@
 
 - (NSData *) body
 {
-    if (!req->input_buffer)
+    if (!req->input_buffer->buffer)
         return nil;
     else {
 		NSData *data = [NSData dataWithBytes:req->input_buffer->buffer length:req->input_buffer->off];
@@ -43,7 +43,7 @@
         case EVHTTP_REQ_POST:
             return @"POST";
         case EVHTTP_REQ_HEAD:
-            return @"HEAD";
+            return @"GET"; // cheat for now
         default:
             return @"UNKNOWN";
     }

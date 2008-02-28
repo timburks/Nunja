@@ -18,7 +18,52 @@
                                              forKey:(match groupAtIndex:1)))))
                                cookieDictionary)
                          (else (dict)))))
-        @cookies))
+        @cookies)
+     
+     (- (id) post is
+        (NSLog ((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding))
+        (((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding) urlQueryDictionary))
+     )
+
+
+
+(global random  (NuBridgedFunction functionWithName:"random" signature:"l"))
+(global srandom (NuBridgedFunction functionWithName:"srandom" signature:"vI"))
+
+;; use this pattern to extract a cookie from a header
+(set cookie-pattern (regex -"[ ]*([^=]*)=(.*)"))
+
+;; @class NunjaCookie
+;; @discussion A class for managing user-identifying cookies.
+(class NunjaCookie is NSObject
+     (ivars)
+     (ivar-accessors)
+     
+     ;; Generate a random identifier for use in a cookie.
+     (+ (id) randomIdentifier is
+        "#{((random) stringValue)}#{((random) stringValue)}#{((random) stringValue)}#{((random) stringValue)}")
+     
+     ;; Construct a cookie for a specified user.
+     (+ (id) cookieForUser:(id) user is
+        ((self alloc) initWithUser:user value:(self randomIdentifier) expiration:(NSDate dateWithTimeIntervalSinceNow:3600)))
+     
+     ;; Initialize a cookie for a specified user.
+     (- (id) initWithUser:(id) user value:(id) value expiration:(id) expiration is
+        (super init)
+        (set @name "session")
+        (set @user user)
+        (set @value value)
+        (set @expiration expiration)
+        (set @stringValue nil)
+        self)
+     
+     ;; Get a string description of a cookie.
+     (- (id) description is
+        "cookie=#{@name} value=#{@value} user=#{@user} expiration=#{(@expiration rfc822)}")
+     
+     ;; Get a string value for a cookie suitable for inclusion in a response header.
+     (- (id) stringValue is "#{@name}=#{@value}; Expires:#{(@expiration rfc1123)}; Path=/"))
+
 
 ;; An HTTP request handler. Handlers consist of an action, a pattern, and a set of statements.
 ;; The action is an HTTP verb such as "get" or "post", the pattern is either an NSString
@@ -55,17 +100,19 @@
         (set HEAD nil)
         (set TITLE nil)
         (set BODY (eval @statements))
-        (set html "<head>\n")
-        (if HEAD (html appendString:HEAD))
-        (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))
-        (html appendString: (+ "</head>\n<body>\n" BODY "</body>\n"))
-        (request respondWithString:html))
+        (if (BODY isKindOfClass:NSString)
+            (then (set html "<head>\n")
+                  (if HEAD (html appendString:HEAD))
+                  (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))
+                  (html appendString: (+ "</head>\n<body>\n" BODY "</body>\n"))
+                  (request respondWithString:html))
+            (else (request respondWithData:BODY))))
      
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
-     (- (id)redirectResponse:(id)response toLocation:(id)location is
-        (response setObject:STATUS_SEE_OTHER forKey:"status")
-        ((response objectForKey:"headers") set: (Location: location))
-        "redirecting"))
+     (- (id)redirectResponse:(id)request toLocation:(id)location is
+        (request setValue:location forResponseHeader:"Location")
+        (request respondWithCode:303 message:"redirecting" string:"redirecting")))
+
 
 ;; Declare a get action.
 (macro get
@@ -117,6 +164,46 @@
 TEMPLATE)
      (eval (NuTemplate codeForString:template)))
 
+;; login page.
+(get "/login"
+     (set TITLE "Log in")
+     <<-HTML
+<form action="/login" method="post">
+<p>Please sign in.</p>
+<label for="username">username: </label> <input type="text" name="username"/><br/>
+<label for="password">password: </label> <input type="password" name="password"/><br/>
+<input type="submit" value="Submit" />
+</form>	
+HTML)
+
+;; login POST handler.
+(post "/login"
+      (set post (request post))
+      (if (eq (post "response") "Cancel")
+          (then
+               (self redirectResponse:response toLocation:"/"))
+          (else
+               (set username (post "username"))
+               (set password (post "password"))
+               (if (and (> (username length) 0) (eq username password))
+                   (then
+                        (set sessionCookie (NunjaCookie cookieForUser:username))
+                        ($sessionCookies setObject:sessionCookie forKey:(sessionCookie value))
+                        ;((response "headers") set: (Set-Cookie: (sessionCookie stringValue)))
+                        (self redirectResponse:request toLocation:"/"))
+                   (else
+                        (set TITLE "Please try again")
+                        <<-HTML
+<p>Invalid Password.  Your password is your username.</p>
+<form action="/login" method="post">
+<label for="username">username: </label> <input type="text" name="username"/><br/>
+<label for="password">password: </label> <input type="password" name="password"/><br/>
+<input type="submit" name="response" value="Submit" />
+<input type="submit" name="response" value="Cancel" />
+</form>	
+			HTML)))))
+
+
 (get "/welcome"
      (set TITLE "Welcome")
      <<-END
@@ -133,6 +220,10 @@ END)
 <h1>You were looking for something?<h1>
 <h2>#{(@match groupAtIndex:1)}</h2>
 END)
+
+(get "/favicon.ico"
+     (request setValue:"image/x-icon" forResponseHeader:"Content-Type")
+     (NSData dataWithContentsOfFile:"public/favicon.ico"))
 
 (class NunjaDelegate is NSObject
      (- (void) handleRequest:(id) request is
