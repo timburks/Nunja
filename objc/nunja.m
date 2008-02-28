@@ -26,6 +26,15 @@
     return [NSString stringWithCString:evhttp_request_uri(req) encoding:NSUTF8StringEncoding];
 }
 
+- (NSData *) body
+{
+    if (!req->input_buffer)
+        return nil;
+    else {
+		NSData *data = [NSData dataWithBytes:req->input_buffer->buffer length:req->input_buffer->off];
+    }
+}
+
 - (NSString *) command
 {
     switch (req->type) {
@@ -142,7 +151,8 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     }
     else {
         nunja_response_helper(req, HTTP_OK, @"OK",
-            [[NSString stringWithFormat:@"Please set the Nunja server delegate.<br/>\nRequest: %s\n", evhttp_request_uri(req)]
+            [[NSString stringWithFormat:@"Please set the Nunja server delegate.<br/>\nRequest: %s\n",
+            evhttp_request_uri(req)]
             dataUsingEncoding:NSUTF8StringEncoding]);
     }
 }

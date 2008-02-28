@@ -1,6 +1,24 @@
 #!/usr/local/bin/nush
 (import Foundation)
 (load "Nunja")
+(load "Nu:template")
+
+(class NunjaRequest
+     (ivar (id) cookies)
+     
+     (- (void) cookies is
+        (unless @cookies
+                (set @cookies
+                     (if (set cookies ((self requestHeaders) objectForKey:"Cookie"))
+                         (then (set cookieDictionary (NSMutableDictionary dictionary))
+                               ((cookies componentsSeparatedByString:";") each:
+                                (do (cookieDescription)
+                                    (if (set match (cookie-pattern findInString:cookieDescription))
+                                        (cookieDictionary setValue:(match groupAtIndex:2)
+                                             forKey:(match groupAtIndex:1)))))
+                               cookieDictionary)
+                         (else (dict)))))
+        @cookies))
 
 ;; An HTTP request handler. Handlers consist of an action, a pattern, and a set of statements.
 ;; The action is an HTTP verb such as "get" or "post", the pattern is either an NSString
@@ -14,40 +32,40 @@
      (ivar-accessors)
      
      ;; Create a handler with a specified action, pattern, and statements. Used internally.
-     (cmethod (id) handlerWithAction:(id)action pattern:(id)pattern statements:(id)statements is
-          (set handler ((self alloc) init))
-          (handler set:(action:action pattern:pattern statements:(cons 'progn statements)))
-          handler)
+     (+ (id) handlerWithAction:(id)action pattern:(id)pattern statements:(id)statements is
+        (set handler ((self alloc) init))
+        (handler set:(action:action pattern:pattern statements:(cons 'progn statements)))
+        handler)
      
      ;; Try to match the handler against a specified action and path. Used internally.
-     (imethod (id)matchAction:(id)action path:(id)path is
-          (if (eq @action action)
-              (then (cond ((@pattern isKindOfClass:NSString)
-                           (set @match (eq @pattern path)))
-                          ((@pattern isKindOfClass:NuRegex)
-                           (set @match (@pattern findInString:path))
-                           (eq path (@match group)))
-                          (else nil)))
-              (else nil)))
+     (- (id)matchAction:(id)action path:(id)path is
+        (if (eq @action action)
+            (then (cond ((@pattern isKindOfClass:NSString)
+                         (set @match (eq @pattern path)))
+                        ((@pattern isKindOfClass:NuRegex)
+                         (set @match (@pattern findInString:path))
+                         (eq path (@match group)))
+                        (else nil)))
+            (else nil)))
      
      ;; Handle a request. Used internally.
-     (imethod (id)handleRequest:(id)request is
-          (NSLog "handling request #{(request uri)}")
-          (set response (dict))
-          (set HEAD nil)
-          (set TITLE nil)
-          (set BODY (eval @statements))
-          (set html "<head>\n")
-          (if HEAD (html appendString:HEAD))
-          (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))
-          (html appendString: (+ "</head>\n<body>\n" BODY "</body>\n"))
-          (request respondWithString:html))
+     (- (id)handleRequest:(id)request is
+        (NSLog "handling request #{(request uri)}")
+        (set response (dict))
+        (set HEAD nil)
+        (set TITLE nil)
+        (set BODY (eval @statements))
+        (set html "<head>\n")
+        (if HEAD (html appendString:HEAD))
+        (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))
+        (html appendString: (+ "</head>\n<body>\n" BODY "</body>\n"))
+        (request respondWithString:html))
      
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
-     (imethod (id)redirectResponse:(id)response toLocation:(id)location is
-          (response setObject:STATUS_SEE_OTHER forKey:"status")
-          ((response objectForKey:"headers") set: (Location: location))
-          "redirecting"))
+     (- (id)redirectResponse:(id)response toLocation:(id)location is
+        (response setObject:STATUS_SEE_OTHER forKey:"status")
+        ((response objectForKey:"headers") set: (Location: location))
+        "redirecting"))
 
 ;; Declare a get action.
 (macro get
@@ -63,7 +81,43 @@
 
 (set $handlers (array))
 
+
+;; global variables
+(set $sessionCookies (dict))
+(set $friends (array))
+
+;; front page.
 (get "/"
+     (set sessionCookieName ((request cookies) "session"))
+     (set sessionCookie (if sessionCookieName (then ($sessionCookies sessionCookieName)) (else nil)))
+     (set user (sessionCookie user))
+     (set TITLE "Friends")
+     (set template <<-TEMPLATE
+<h1>Hello!</h1>
+<p>Let's make a list.</p>
+<% (if user (then %>
+<h2>Your friends</h2>
+<ul>
+<% ($friends each: (do (friend) %>
+<% (set deletion ((dict "name" (friend "name")) urlQueryString)) %>
+<li><%= (friend "name") %> (<%= (friend "email") %>) (<a href="/delete?<%= deletion %>">X</a>)</li>
+<% )) %>
+<li><a href="/addfriend">Add a friend</a></li>
+</ul>
+<hr/>
+<p>You are logged in as <%= user %>. <a href="/logout">Log out.</a></p>
+<% ) (else %>
+<form action="/login" method="post">
+<p>First, please sign in.</p>
+<label for="username">username: </label> <input type="text" name="username"/><br/>
+<label for="password">password: </label> <input type="password" name="password"/><br/>
+<input type="submit" value="Submit" />
+</form>
+<% )) %>
+TEMPLATE)
+     (eval (NuTemplate codeForString:template)))
+
+(get "/welcome"
      (set TITLE "Welcome")
      <<-END
 <h1>Hello</h1>
@@ -73,6 +127,11 @@ END)
 (get "/about" <<-END
 <h1>About this site</h1>
 <p>Nunja!</p>
+END)
+
+(get /\/page\/(.*)/ <<-END
+<h1>You were looking for something?<h1>
+<h2>#{(@match groupAtIndex:1)}</h2>
 END)
 
 (class NunjaDelegate is NSObject
@@ -86,7 +145,10 @@ END)
         (set matches ($handlers select:(do (handler) (handler matchAction:command path:path))))
         (if (matches count)
             (then ((matches 0) handleRequest:request))
-            (else (request respondWithCode:404 message:"Not Found" string:"Not Found. You requested: #{(request uri)}")))))
+            (else
+                 (puts "message body:")
+                 (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
+                 (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{command} #{path}")))))
 
 (set n ((Nunja alloc) init))
 (n bindToAddress:"0.0.0.0" port:3000)
