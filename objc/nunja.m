@@ -43,7 +43,7 @@
         case EVHTTP_REQ_POST:
             return @"POST";
         case EVHTTP_REQ_HEAD:
-            return @"GET"; // cheat for now
+            return @"HEAD";
         default:
             return @"UNKNOWN";
     }

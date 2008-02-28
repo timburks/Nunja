@@ -4,7 +4,7 @@
     @discussion General utilities for Nunja.
 */
 
-#import "NuHTTP.h"
+#import "helpers.h"
 #import <arpa/inet.h>
 
 static unichar char_to_int(unichar c)
@@ -175,10 +175,10 @@ static NSMutableDictionary *parseHeaders(const char *headers)
             // try to scan pattern
             int i;
             int patternLength = strlen(pattern);
-            bool match = true;
+            BOOL match = YES;
             for (i = 0; i < patternLength; i++) {
                 if (bytes[cursor+i] != pattern[i]) {
-                    match = false;
+                    match = NO;
                     break;
                 }
             }

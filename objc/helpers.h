@@ -4,7 +4,7 @@
     @discussion General utilities for the Nunja web server.
 */
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 @interface NSString (Nunja)
 /*! URL-encode a string. */

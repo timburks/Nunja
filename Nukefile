@@ -10,6 +10,8 @@
 (set @framework_identifier   "nu.programming.nunja")
 (set @framework_creator_code "????")
 
+;;(set @cflags "-g -I ../NuLinux -I ../NuLinux/Foundation ")
+
 (compilation-tasks)
 (framework-tasks)
 
