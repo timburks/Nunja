@@ -1,7 +1,7 @@
 /*!
-    @file NuHTTP.m
+    @file helpers.m
     @copyright Copyright (c) 2007 Tim Burks, Neon Design Technology, Inc.
-    @discussion General utilities for NuHTTP.
+    @discussion General utilities for Nunja.
 */
 
 #import "NuHTTP.h"
@@ -61,7 +61,9 @@ static char int_to_char[] = "0123456789ABCDEF";
                 [result appendString:@" "];
                 break;
             case '%':
-                [result appendFormat:@"%C", char_to_int([self characterAtIndex:i++])*16 + char_to_int([self characterAtIndex:i++])];
+                [result appendFormat:@"%C",
+                    char_to_int([self characterAtIndex:i++])*16
+                    + char_to_int([self characterAtIndex:i++])];
                 break;
             default:
                 [result appendFormat:@"%C", c];
@@ -114,7 +116,8 @@ static NSMutableDictionary *parseHeaders(const char *headers)
         while ((headers[cursor] != ':') && (headers[cursor] != '=')) {
             cursor++;
         }
-        NSString *key = [[[NSString alloc] initWithBytes:(headers+start) length:(cursor - start) encoding:NSASCIIStringEncoding] autorelease];
+        NSString *key = [[[NSString alloc] initWithBytes:(headers+start)
+            length:(cursor - start) encoding:NSASCIIStringEncoding] autorelease];
         //NSLog(@"got key[%@]", key);
         cursor++;
 
