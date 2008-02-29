@@ -1,7 +1,6 @@
 #!/usr/local/bin/nush
-(import Foundation)
+
 (load "Nunja")
-(load "Nu:template")
 
 ;; @class NSDate
 ;; @discussion Extensions for Nunja.
@@ -36,14 +35,18 @@
                                ((cookies componentsSeparatedByString:";") each:
                                 (do (cookieDescription)
                                     (if (set match (cookie-pattern findInString:cookieDescription))
-                                        (cookieDictionary setValue:(match groupAtIndex:2)
+                                        (cookieDictionary setObject:(match groupAtIndex:2)
                                              forKey:(match groupAtIndex:1)))))
                                cookieDictionary)
                          (else (dict)))))
         @cookies)
      
      (- (id) post is
-        (((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding) urlQueryDictionary)))
+	(NSLog "body is")
+	(NSLog ((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding))
+        (set d (((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding) urlQueryDictionary))
+        (NSLog (d description))
+        d))
 
 (global random  (NuBridgedFunction functionWithName:"random" signature:"l"))
 (global srandom (NuBridgedFunction functionWithName:"srandom" signature:"vI"))
@@ -95,10 +98,17 @@
      (ivars)
      (ivar-accessors)
      
+	(- (void) setValue:(id) value forKey:(id) key is
+		(NSLog "this should not get called")
+		(NSLog "#{key}: #{value}"))
+
      ;; Create a handler with a specified action, pattern, and statements. Used internally.
      (+ (id) handlerWithAction:(id)action pattern:(id)pattern statements:(id)statements is
         (set handler ((self alloc) init))
-        (handler set:(action:action pattern:pattern statements:(cons 'progn statements)))
+        ;(handler set:(action:action pattern:pattern statements:(cons 'progn statements)))
+        (handler setAction:action)
+        (handler setPattern:pattern)
+	(handler setStatements:(cons 'progn statements))
         handler)
      
      ;; Try to match the handler against a specified action and path. Used internally.

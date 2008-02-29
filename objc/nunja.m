@@ -1,9 +1,15 @@
-
+#include <sys/types.h>
+#include <sys/time.h>
 #include <sys/queue.h>
 #include <event.h>
 #include <evhttp.h>
 
 #import <Foundation/Foundation.h>
+#ifdef DARWIN
+#import <Nu/Nu.h>
+#else
+#import "Nu.h"
+#endif
 
 @interface NunjaRequest : NSObject
 {
@@ -26,12 +32,22 @@
     return [NSString stringWithCString:evhttp_request_uri(req) encoding:NSUTF8StringEncoding];
 }
 
+void NunjaInit()
+{
+printf ("initializing\n");
+    static initialized = 0;
+    if (!initialized) {
+        initialized = 1;
+        [Nu loadNuFile:@"nunja" fromBundleWithIdentifier:@"nu.programming.nunja"];
+    }
+}
+
 - (NSData *) body
 {
     if (!req->input_buffer->buffer)
         return nil;
     else {
-		NSData *data = [NSData dataWithBytes:req->input_buffer->buffer length:req->input_buffer->off];
+        NSData *data = [NSData dataWithBytes:req->input_buffer->buffer length:req->input_buffer->off];
     }
 }
 
@@ -140,6 +156,10 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 @end
 
 @implementation Nunja
+
++ (void) load {
+	NunjaInit();
+}
 
 static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointer)
 {

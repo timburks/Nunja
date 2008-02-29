@@ -42,7 +42,11 @@ static char int_to_char[] = "0123456789ABCDEF";
     while (i < max) {
         unichar c = [self characterAtIndex:i++];
         if (iswalpha(c) || iswdigit(c) || (c == '-') || (c == '.') || (c == '_') || (c == '~'))
+#ifdef DARWIN
             [result appendFormat:@"%C", c];
+#else
+            [result appendFormat:@"%c", c];
+#endif
         else
             [result appendString:[NSString stringWithFormat:@"%%%c%c", int_to_char[(c/16)%16], int_to_char[c%16]]];
     }
@@ -61,12 +65,20 @@ static char int_to_char[] = "0123456789ABCDEF";
                 [result appendString:@" "];
                 break;
             case '%':
+#ifdef DARWIN
                 [result appendFormat:@"%C",
+#else
+                [result appendFormat:@"%c",
+#endif
                     char_to_int([self characterAtIndex:i++])*16
                     + char_to_int([self characterAtIndex:i++])];
                 break;
             default:
+#ifdef DARWIN
                 [result appendFormat:@"%C", c];
+#else
+                [result appendFormat:@"%c", c];
+#endif
         }
     }
     return result;
@@ -83,7 +95,7 @@ static char int_to_char[] = "0123456789ABCDEF";
         if ([pair count] == 2) {
             NSString *key = [pair objectAtIndex:0];
             NSString *value = [[pair objectAtIndex:1] urlDecode];
-            [result setValue:value forKey:key];
+            [result setObject:value forKey:key];
         }
     }
     return result;

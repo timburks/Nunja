@@ -1,16 +1,21 @@
-
 ;; source files
 (set @m_files     (filelist "^objc/.*.m$"))
 (set @nu_files 	  (filelist "^nu/.*nu$"))
 
-(set @ldflags  "-framework Foundation -framework Nu -levent")
+(set SYSTEM ((NSString stringWithShellCommand:"uname") chomp))
+(case SYSTEM
+      ("Darwin"
+               (set @cflags "-g -DDARWIN")
+               (set @ldflags  "-framework Foundation -framework Nu -levent"))
+      ("Linux"
+              (set @cflags "-g -I ../NuLinux/NuLinux/Nu.framework/Headers -I ../NuLinux -I ../NuLinux/Foundation -fconstant-string-class=NSConstantString ")
+              (set @ldflags "-L/usr/local/lib /usr/lib/libFoundation.so /usr/lib/libNu.so /usr/local/lib/libevent.so"))
+      (else nil))
 
 ;; framework description
-(set @framework 			 "Nunja")
-(set @framework_identifier   "nu.programming.nunja")
+(set @framework "Nunja")
+(set @framework_identifier "nu.programming.nunja")
 (set @framework_creator_code "????")
-
-;;(set @cflags "-g -I ../NuLinux -I ../NuLinux/Foundation ")
 
 (compilation-tasks)
 (framework-tasks)
