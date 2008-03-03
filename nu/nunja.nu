@@ -7,9 +7,11 @@
 (global random  (NuBridgedFunction functionWithName:"random" signature:"l"))
 (global srandom (NuBridgedFunction functionWithName:"srandom" signature:"vI"))
 
-(import Foundation)
-;;(global NSLog (NuBridgedFunction functionWithName:"NSLog" signature:"v@"))
-;;(global NSUTF8StringEncoding 1)
+(case (set SYSTEM ((NSString stringWithShellCommand:"uname") chomp))
+      ("Darwin" (import Foundation))
+      ("Linux" (global NSLog (NuBridgedFunction functionWithName:"NSLog" signature:"v@"))
+               (global NSUTF8StringEncoding 1))
+      (else nil))
 
 (load "Nu:template")
 (load "Nunja:mime")
@@ -163,7 +165,7 @@
         (self init)
         (set @handlers (array))
         (set $nunja self)
-		(set @root site)
+        (set @root site)
         (load (+ site "/site.nu"))
         self)
      

@@ -107,7 +107,7 @@ HTML)
       (self redirectResponse:request toLocation:"/"))
 
 ;; delete-a-friend with a GET. Strictly, this should be a post, but we use a get to show how it would be done.
-(get /^\/delete\?(.*)/
+(get (regex -"^/delete\?(.*)$")
      (set post ((@match groupAtIndex:1) urlQueryDictionary))
      (set $friends ($friends select:(do (friend) (!= (friend "name") (post "name")))))
      (self redirectResponse:request toLocation:"/"))
