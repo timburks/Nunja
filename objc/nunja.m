@@ -23,11 +23,7 @@ limitations under the License.
 #include <evhttp.h>
 
 #import <Foundation/Foundation.h>
-#ifdef DARWIN
 #import <Nu/Nu.h>
-#else
-#import "Nu.h"
-#endif
 
 @interface NunjaRequest : NSObject
 {
