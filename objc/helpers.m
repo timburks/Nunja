@@ -1,7 +1,7 @@
 /*!
     @file helpers.m
-    @copyright Copyright (c) 2007 Tim Burks, Neon Design Technology, Inc.
-    @discussion General utilities for Nunja.
+    @copyright Copyright (c) 2008 Tim Burks, Neon Design Technology, Inc.
+    @discussion General utilities for the Nunja web server.
 */
 
 #import "helpers.h"

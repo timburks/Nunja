@@ -1,6 +1,6 @@
 /*!
     @header helpers.h
-    @copyright Copyright (c) 2007 Tim Burks, Neon Design Technology, Inc.
+    @copyright Copyright (c) 2008 Tim Burks, Neon Design Technology, Inc.
     @discussion General utilities for the Nunja web server.
 */
 

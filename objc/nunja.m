@@ -1,3 +1,9 @@
+/*!
+    @file nunja.m
+    @copyright Copyright (c) 2008 Tim Burks, Neon Design Technology, Inc.
+    @discussion Objective-C components of the Nunja web server.
+*/
+
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/queue.h>
@@ -38,7 +44,7 @@ printf ("initializing\n");
     static initialized = 0;
     if (!initialized) {
         initialized = 1;
-        [Nu loadNuFile:@"nunja" fromBundleWithIdentifier:@"nu.programming.nunja"];
+        [Nu loadNuFile:@"nunja" fromBundleWithIdentifier:@"nu.programming.nunja" withContext:nil];
     }
 }
 
@@ -171,7 +177,7 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     }
     else {
         nunja_response_helper(req, HTTP_OK, @"OK",
-            [[NSString stringWithFormat:@"Please set the Nunja server delegate.<br/>\nRequest: %s\n",
+            [[NSString stringWithFormat:@"Please set the Nunja server delegate.<br/>If you are running nunjad, use the '-s' option to specify a site.<br/>\nRequest: %s\n",
             evhttp_request_uri(req)]
             dataUsingEncoding:NSUTF8StringEncoding]);
     }
