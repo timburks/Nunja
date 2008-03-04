@@ -9,7 +9,7 @@
                (set @ldflags  "-framework Foundation -framework Nu -levent"))
       ("Linux"
               (set @cflags "-g -I ../NuLinux/NuLinux/Nu.framework/Headers -I ../NuLinux -I ../NuLinux/Foundation -fconstant-string-class=NSConstantString ")
-              (set @ldflags "-L/usr/local/lib /usr/lib/libFoundation.so /usr/lib/libNu.so /usr/local/lib/libevent.a"))
+              (set @ldflags "-lrt -L/usr/local/lib -lFoundation /usr/lib/libNu.so /usr/local/lib/libevent.a"))
       (else nil))
 
 ;; framework description
