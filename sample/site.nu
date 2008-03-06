@@ -117,6 +117,6 @@ HTML)
 <p>It is running on Nunja!</p>
 END)
 
-(get "/faviconx.ico"
-     (request setValue:"image/x-icon" forResponseHeader:"Content-Type")
+(get "/recycle.ico"
+     (request setValue:"application/icon" forResponseHeader:"Content-Type")
      (NSData dataWithContentsOfFile:"public/favicon.ico"))

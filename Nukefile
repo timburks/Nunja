@@ -8,8 +8,8 @@
                (set @cflags "-g -DDARWIN")
                (set @ldflags  "-framework Foundation -framework Nu -levent"))
       ("Linux"
-              (set @cflags "-g -I ../NuLinux/NuLinux/Nu.framework/Headers -I ../NuLinux -I ../NuLinux/Foundation -fconstant-string-class=NSConstantString ")
-              (set @ldflags "-L/usr/local/lib /usr/lib/libFoundation.so /usr/lib/libNu.so /usr/local/lib/libevent.a"))
+              (set @cflags "-g -I ../NuLinux/NuLinux/Nu.framework/Headers -I ../NuLinux/NuFoundation -fconstant-string-class=NSConstantString ")
+              (set @ldflags "-L/usr/local/lib -lNuFoundation -lNu -levent"))
       (else nil))
 
 ;; framework description
