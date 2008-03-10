@@ -3,7 +3,7 @@ Nunja is a small portable web server for use with Nu.
 
 It is based on the libevent event notification library
 (http://monkey.org/~provos/libevent/), and has been tested
-on OS X 1.5 and Linux (Ubuntu-7.10) systems. 
+on OS X 10.5 and Linux (Ubuntu-7.10) systems. 
 	
 REQUIREMENTS
 
