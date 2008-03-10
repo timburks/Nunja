@@ -1,0 +1,62 @@
+
+Nunja is a small portable web server for use with Nu.
+
+It is based on the libevent event notification library
+(http://monkey.org/~provos/libevent/), and has been tested
+on OS X 1.5 and Linux (Ubuntu-7.10) systems. 
+	
+REQUIREMENTS
+
+Nunja requires Nu and nuke, the Nu build tool. To obtain
+Nu, please visit http://programming.nu or get the source
+from the Nu git repository on github:
+	http://github.com/timburks/nu
+	
+Nunja requires libevent. Before building Nunja, please 
+be sure that libevent is installed on your system. The
+default build configuration expects libevent to be installed
+in /usr/local.
+
+On Linux systems, Nunja requires an implementation of the
+Foundation classes. It has been tested with NuFound, a
+modified version of the libFoundation library that has been
+updated to work with Nu and which can be built using the
+GNU autotools. The primary NuFound repository is on github: 
+	http://github.com/timburks/nufound
+	
+The primary Nunja repository is also on github:
+	http://github.com/timburks/nunja
+	
+INSTALLATION
+
+After installing all prerequisites, build the Nunja framework
+by typing "nuke" in the top-level Nunja directory.
+
+AN EXAMPLE
+
+Nunja can be run from the command line using the "nunjad" 
+(nunja daemon) script.  nunjad accepts arguments that can
+be used to specify a port and a site description. A sample
+site description is in the sample directory. To run it in
+Nunja, use the following command:
+	nunjad --site sample
+	
+Currently the sample site is very simple, but illustrates
+the processing of GET and POST requests and the basics of
+response generation, including the use of cookies.
+
+INFLUENCES
+
+Nunja is modeled on Blake Mizerany's Sinatra, 
+	http://sinatra.rubyforge.org/
+but has the clarity and transparency of implementation
+that can only be achieved with Objective-C and Nu.
+
+AUTHOR
+
+Nunja was written by Tim Burks and awaits a host of updates
+and improvements from its users.
+
+Nunja is released under the Apache License, version 2.0.
+
+Copyright 2008, Neon Design Technology, Inc.

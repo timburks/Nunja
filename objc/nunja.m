@@ -1,7 +1,19 @@
 /*!
-    @file nunja.m
-    @copyright Copyright (c) 2008 Tim Burks, Neon Design Technology, Inc.
-    @discussion Objective-C components of the Nunja web server.
+@file nunja.m
+@discussion Objective-C components of the Nunja web server.
+@copyright Copyright (c) 2008 Neon Design Technology, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 #include <sys/types.h>
@@ -40,7 +52,6 @@
 
 void NunjaInit()
 {
-printf ("initializing\n");
     static initialized = 0;
     if (!initialized) {
         initialized = 1;
@@ -163,8 +174,9 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 
 @implementation Nunja
 
-+ (void) load {
-	NunjaInit();
++ (void) load
+{
+    NunjaInit();
 }
 
 static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointer)

@@ -1,7 +1,19 @@
 /*!
-    @file helpers.m
-    @copyright Copyright (c) 2008 Tim Burks, Neon Design Technology, Inc.
-    @discussion General utilities for the Nunja web server.
+@file helpers.m
+@discussion General utilities for the Nunja web server.
+@copyright Copyright (c) 2008 Neon Design Technology, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 #import "helpers.h"
@@ -42,11 +54,11 @@ static char int_to_char[] = "0123456789ABCDEF";
     while (i < max) {
         unichar c = [self characterAtIndex:i++];
         if (iswalpha(c) || iswdigit(c) || (c == '-') || (c == '.') || (c == '_') || (c == '~'))
-#ifdef DARWIN
+        #ifdef DARWIN
             [result appendFormat:@"%C", c];
-#else
-            [result appendFormat:@"%c", c];
-#endif
+        #else
+        [result appendFormat:@"%c", c];
+        #endif
         else
             [result appendString:[NSString stringWithFormat:@"%%%c%c", int_to_char[(c/16)%16], int_to_char[c%16]]];
     }
@@ -65,20 +77,20 @@ static char int_to_char[] = "0123456789ABCDEF";
                 [result appendString:@" "];
                 break;
             case '%':
-#ifdef DARWIN
+            #ifdef DARWIN
                 [result appendFormat:@"%C",
-#else
-                [result appendFormat:@"%c",
-#endif
+                #else
+                    [result appendFormat:@"%c",
+                #endif
                     char_to_int([self characterAtIndex:i++])*16
                     + char_to_int([self characterAtIndex:i++])];
                 break;
             default:
-#ifdef DARWIN
+            #ifdef DARWIN
                 [result appendFormat:@"%C", c];
-#else
+            #else
                 [result appendFormat:@"%c", c];
-#endif
+            #endif
         }
     }
     return result;
