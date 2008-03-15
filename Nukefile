@@ -29,6 +29,7 @@
 (task "doc" is (SH "nudoc"))
 
 (task "install" => "framework" is
+      (SH "sudo cp nunjad /usr/local/bin")
       (SH "sudo rm -rf /Library/Frameworks/#{@framework}.framework")
       (SH "ditto #{@framework}.framework /Library/Frameworks/#{@framework}.framework"))
 
