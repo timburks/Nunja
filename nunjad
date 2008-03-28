@@ -55,5 +55,6 @@
 (if site
     (n setDelegate:((NunjaDelegate alloc) initWithSite:site)))
 (puts (+ "Nunja is running on port " port))
+(set $site site) ;; make the path to the site directory available to handlers
 (n run)
 
