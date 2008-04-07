@@ -105,10 +105,12 @@
         @cookies)
      
      (- (id) post is
-        (NSLog "body is")
-        (NSLog ((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding))
+        (if (Nunja verbose)
+            (NSLog "body is")
+            (NSLog ((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding)))
         (set d (((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding) urlQueryDictionary))
-        (NSLog (d description))
+        (if (Nunja verbose)
+            (NSLog (d description)))
         d))
 
 ;; An HTTP request handler. Handlers consist of an action, a pattern, and a set of statements.
@@ -148,7 +150,8 @@
      
      ;; Handle a request. Used internally.
      (- (id)handleRequest:(id)request is
-        (NSLog "handling request #{(request uri)}")
+        (if (Nunja verbose)
+            (NSLog "handling request #{(request uri)}"))
         (set response (dict))
         (set HEAD nil)
         (set TITLE nil)
@@ -183,8 +186,9 @@
      (- (void) handleRequest:(id) request is
         (set path (request uri))
         (set command (request command))
-        (NSLog (+ "REQUEST " command " " path "-----"))
-        (NSLog ((request requestHeaders) description))
+        (if (Nunja verbose)
+            (NSLog (+ "REQUEST " command " " path "-----"))
+            (NSLog ((request requestHeaders) description)))
         (request setValue:"Nunja" forResponseHeader:"Server")
         
         (set matches (@handlers select:(do (handler) (handler matchAction:command path:path))))

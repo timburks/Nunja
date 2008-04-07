@@ -25,6 +25,8 @@ limitations under the License.
 #import <Foundation/Foundation.h>
 #import <Nu/Nu.h>
 
+static bool verbose_nunja = false;
+
 @interface NunjaRequest : NSObject
 {
     struct evhttp_request *req;
@@ -89,7 +91,7 @@ void NunjaInit()
     return dict;
 }
 
-- (NSDictionary *) responseHeaders
+static NSDictionary *nunja_response_headers_helper(struct evhttp_request *req)
 {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     struct evkeyval *header;
@@ -98,6 +100,11 @@ void NunjaInit()
             forKey:[NSString stringWithCString:header->key encoding:NSUTF8StringEncoding]];
     }
     return dict;
+}
+
+- (NSDictionary *) responseHeaders
+{
+    return nunja_response_headers_helper(req);
 }
 
 - (int) setValue:(const char *) value forResponseHeader:(const char *) key
@@ -117,6 +124,9 @@ void NunjaInit()
 
 static void nunja_response_helper(struct evhttp_request *req, int code, NSString *message, NSData *data)
 {
+    if (verbose_nunja) {
+        NSLog(@"RESPONSE %d %@ %@", code, message, [nunja_response_headers_helper(req) description]);
+    }
     struct evbuffer *buf = evbuffer_new();
     if (buf == NULL) err(1, "failed to create response buffer");
     evbuffer_add(buf, [data bytes], [data length]);
@@ -126,29 +136,21 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 
 - (void) respondWithString:(NSString *) string
 {
-    NSLog(@"RESPONSE -----");
-    NSLog([[self responseHeaders] description]);
     nunja_response_helper(req, HTTP_OK, @"OK", [string dataUsingEncoding:NSUTF8StringEncoding]);
 }
 
 - (void) respondWithData:(NSData *) data
 {
-    NSLog(@"RESPONSE -----");
-    NSLog([[self responseHeaders] description]);
     nunja_response_helper(req, HTTP_OK, @"OK", data);
 }
 
 - (void) respondWithCode:(int) code message:(NSString *) message string:(NSString *) string
 {
-    NSLog([NSString stringWithFormat:@"RESPONSE (%d) -----", code]);
-    NSLog([[self responseHeaders] description]);
     nunja_response_helper(req, code, message, [string dataUsingEncoding:NSUTF8StringEncoding]);
 }
 
 - (void) respondWithCode:(int) code message:(NSString *) message data:(NSData *) data
 {
-    NSLog([NSString stringWithFormat:@"RESPONSE (%d) -----", code]);
-    NSLog([[self responseHeaders] description]);
     nunja_response_helper(req, code, message, data);
 }
 
@@ -169,6 +171,13 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 @end
 
 @implementation Nunja
+
++ (void) setVerbose:(bool) v
+{
+    verbose_nunja = v;
+}
+
++ (bool) verbose {return verbose_nunja;}
 
 + (void) load
 {
