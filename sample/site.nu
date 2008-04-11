@@ -131,3 +131,15 @@ END)
 (get "/recycle.ico"
      (request setValue:"application/icon" forResponseHeader:"Content-Type")
      (NSData dataWithContentsOfFile:"public/favicon.ico"))
+
+(post "/postimage"
+      (puts (request description))
+      (set postBody (request body))
+      (puts ((request requestHeaders) description))
+      (set contentType ((request requestHeaders) "Content-Type"))
+      (set boundary ((contentType componentsSeparatedByString:"=") lastObject))
+      (set postDictionary (postBody multipartDictionaryWithBoundary:boundary))
+      (set image (postDictionary objectForKey:"image"))
+      (set data (image objectForKey:"data"))
+      (data writeToFile:"image.png" atomically:NO)
+      "thanks for uploading!")
