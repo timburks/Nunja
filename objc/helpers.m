@@ -249,3 +249,13 @@ static NSMutableDictionary *parseHeaders(const char *headers)
 }
 
 @end
+
+@implementation NSData (Nunja)
+
++ dataWithSize:(int) size
+{
+    const char *bytes = (char *) malloc (size * sizeof(char));
+    return [self dataWithBytesNoCopy:bytes length:size freeWhenDone:YES];
+}
+
+@end
