@@ -134,10 +134,10 @@ END)
 
 ;; image uploads
 (post "/postimage"
-      (puts (request description))
-      (set postBody (request body))
-      (puts ((request requestHeaders) description))
-      (set contentType ((request requestHeaders) "Content-Type"))
+      (puts (REQUEST description))
+      (set postBody (REQUEST body))
+      (puts ((REQUEST requestHeaders) description))
+      (set contentType ((REQUEST requestHeaders) "Content-Type"))
       (set boundary ((contentType componentsSeparatedByString:"=") lastObject))
       (set postDictionary (postBody multipartDictionaryWithBoundary:boundary))
       (set image (postDictionary objectForKey:"image"))
@@ -146,9 +146,9 @@ END)
       "thanks for uploading!")
 
 ;; large file download
-(get /\/data(.*)/
-     (request setValue:"application/octet-stream" forResponseHeader:"Content-Type")
-     (set size (@match groupAtIndex:1))
+(get (regex -"/data(.*)")
+     (REQUEST setValue:"application/octet-stream" forResponseHeader:"Content-Type")
+     (set size (MATCH groupAtIndex:1))
      (set megabytes (if (eq size "")
                         then 1
                         else (size doubleValue)))
