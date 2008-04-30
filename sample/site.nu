@@ -131,3 +131,26 @@ END)
 (get "/recycle.ico"
      (REQUEST setValue:"application/icon" forResponseHeader:"Content-Type")
      (NSData dataWithContentsOfFile:"public/favicon.ico"))
+
+;; image uploads
+(post "/postimage"
+      (puts (request description))
+      (set postBody (request body))
+      (puts ((request requestHeaders) description))
+      (set contentType ((request requestHeaders) "Content-Type"))
+      (set boundary ((contentType componentsSeparatedByString:"=") lastObject))
+      (set postDictionary (postBody multipartDictionaryWithBoundary:boundary))
+      (set image (postDictionary objectForKey:"image"))
+      (set data (image objectForKey:"data"))
+      (data writeToFile:"image.png" atomically:NO)
+      "thanks for uploading!")
+
+;; large file download
+(get /\/data(.*)/
+     (request setValue:"application/octet-stream" forResponseHeader:"Content-Type")
+     (set size (@match groupAtIndex:1))
+     (set megabytes (if (eq size "")
+                        then 1
+                        else (size doubleValue)))
+     (set data (NSData dataWithSize:(* megabytes 1024 1024))))
+
