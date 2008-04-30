@@ -131,10 +131,11 @@
      ;; Create a handler with a specified action, pattern, and statements. Used internally.
      (+ (id) handlerWithAction:(id)action pattern:(id)pattern statements:(id)statements is
         (set handler ((self alloc) init))
-        ;(handler set:(action:action pattern:pattern statements:(cons 'progn statements)))
         (handler setAction:action)
         (handler setPattern:pattern)
-        (handler setStatements:(cons 'progn statements))
+        (if (send statements isKindOfClass:NuBlock)
+            (then (handler setStatements:statements))
+            (else (handler setStatements:(cons 'progn statements))))
         handler)
      
      ;; Try to match the handler against a specified action and path. Used internally.
@@ -155,17 +156,31 @@
         (set response (dict))
         (set HEAD nil)
         (set TITLE nil)
-        (set BODY (eval @statements))
+        
+        (if (send @statements isKindOfClass:NuCell)
+            (then (set BODY (eval @statements)))          ;; deprecated, evaluates statements in the instance method context
+            (else (set BODY (@statements @match request response)))) ;; new style, evaluates a function with a lexical closure
+        
         (if (BODY isKindOfClass:NSString)
             (then (set html "<head>\n")
-                  (if HEAD (html appendString:HEAD))
-                  (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))
+                  (if (response "HEAD")
+                      (then (html appendString:(response "HEAD")))
+                      (else (if HEAD (html appendString:HEAD))))
+                  (if (response "TITLE")
+                      (then (html appendString:(+ "<title>" (response "TITLE") "</title>")))
+                      (else (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))))
                   (html appendString: (+ "</head>\n<body>\n" BODY "</body>\n"))
                   (request respondWithString:html))
             (else (request respondWithData:BODY))))
      
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
      (- (id)redirectResponse:(id)request toLocation:(id)location is
+        (request setValue:location forResponseHeader:"Location")
+        (request respondWithCode:303 message:"redirecting" string:"redirecting")))
+
+(class Nunja
+     ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
+     (+ (id)redirectResponse:(id)request toLocation:(id)location is
         (request setValue:location forResponseHeader:"Location")
         (request respondWithCode:303 message:"redirecting" string:"redirecting")))
 
@@ -208,16 +223,28 @@
 ;; Declare a get action.
 (global get
         (macro _
-             (set __pattern    (eval (car margs)))
-             (set __statements (cdr margs))
-             (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__statements))))
+             (if $do-it-the-old-way
+                 (then
+                      (set __pattern    (eval (car margs)))
+                      (set __statements (cdr margs))
+                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__statements)))
+                 (else
+                      (set __pattern    (eval (car margs)))
+                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE)) (cdr margs))))
+                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__function))))))
 
 ;; Declare a post action.
 (global post
         (macro _
-             (set __pattern    (eval (car margs)))
-             (set __statements (cdr margs))
-             (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__statements))))
+             (if $do-it-the-old-way
+                 (then
+                      (set __pattern    (eval (car margs)))
+                      (set __statements (cdr margs))
+                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__statements)))
+                 (else
+                      (set __pattern    (eval (car margs)))
+                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE)) (cdr margs))))
+                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__function))))))
 
 ;; Set the top-level directory for a site
 (global root
