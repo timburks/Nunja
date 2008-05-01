@@ -220,6 +220,8 @@
                            (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
                            (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{command} #{path}")))))))
 
+(global nunja-site-prefix nil) ;; default
+
 ;; Declare a get action.
 (global get
         (macro _
@@ -230,7 +232,7 @@
                       (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__statements)))
                  (else
                       (set __pattern    (eval (car margs)))
-                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE)) (cdr margs))))
+                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE) (nunja-site-prefix)) (cdr margs))))
                       (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__function))))))
 
 ;; Declare a post action.
@@ -243,7 +245,7 @@
                       (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__statements)))
                  (else
                       (set __pattern    (eval (car margs)))
-                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE)) (cdr margs))))
+                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE) (nunja-site-prefix)) (cdr margs))))
                       (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__function))))))
 
 ;; Set the top-level directory for a site
