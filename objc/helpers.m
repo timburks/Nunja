@@ -105,7 +105,7 @@ static char int_to_char[] = "0123456789ABCDEF";
     for (i = 0; i < max; i++) {
         NSArray *pair = [[pairs objectAtIndex:i] componentsSeparatedByString:@"="];
         if ([pair count] == 2) {
-            NSString *key = [pair objectAtIndex:0];
+            NSString *key = [[pair objectAtIndex:0] urlDecode];
             NSString *value = [[pair objectAtIndex:1] urlDecode];
             [result setObject:value forKey:key];
         }
