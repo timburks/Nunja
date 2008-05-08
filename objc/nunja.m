@@ -22,6 +22,9 @@ limitations under the License.
 #include <event.h>
 #include <evhttp.h>
 
+#include <netdb.h>
+#include <evdns.h>
+
 #import <Foundation/Foundation.h>
 #import <Nu/Nu.h>
 
@@ -160,9 +163,11 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 - (void) handleRequest:(NunjaRequest *)request;
 @end
 
+struct event_base *event_base;
+
 @interface Nunja : NSObject
 {
-    struct event_base *event_base;
+
     struct evhttp *httpd;
     id<NSObject,NunjaDelegate> delegate;
 }
@@ -204,6 +209,7 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
 {
     [super init];
     event_base = event_init();
+    evdns_init();
     httpd = evhttp_new(event_base);
     evhttp_set_gencb(httpd, nunja_request_handler, self);
     delegate = nil;
@@ -236,6 +242,108 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     [d retain];
     [delegate release];
     delegate = d;
+}
+
+@class NuBlock;
+@class NuCell;
+
+static void nunja_dns_gethostbyname_cb(int result, char type, int count, int ttl, void *addresses, void *arg)
+{
+    id address = nil;
+
+    if (result == DNS_ERR_TIMEOUT) {
+        fprintf(stdout, "[Timed out] ");
+        goto out;
+    }
+
+    if (result != DNS_ERR_NONE) {
+        fprintf(stdout, "[Error code %d] ", result);
+        goto out;
+    }
+
+    fprintf(stderr, "type: %d, count: %d, ttl: %d: ", type, count, ttl);
+
+    switch (type) {
+        case DNS_IPv4_A:
+        {
+            struct in_addr *in_addrs = addresses;
+            int i;
+            /* a resolution that's not valid does not help */
+            if (ttl < 0)
+                goto out;
+            if (count == 0)
+                goto out;
+            address = [NSString stringWithFormat:@"%s", inet_ntoa(in_addrs[0])];
+            break;
+        }
+        case DNS_PTR:
+            /* may get at most one PTR */
+            if (count != 1)
+                goto out;
+
+            fprintf(stderr, "%s ", *(char **)addresses);
+            break;
+        default:
+            goto out;
+    }
+    out:
+    {
+        NuBlock *block = (NuBlock *) arg;
+        NuCell *args = [[NuCell alloc] init];
+        [args setCar:address];
+        [block evalWithArguments:args context:nil];
+        [block release];
+    }
+}
+
+- (void) resolveDomainName:(NSString *) name andDo:(NuBlock *) block
+{
+    [block retain];
+    evdns_resolve_ipv4([name cStringUsingEncoding:NSUTF8StringEncoding], 0, nunja_dns_gethostbyname_cb, block);
+}
+
+void
+nu_http_request_done(struct evhttp_request *req, void *arg)
+{
+    printf("received %d\n", (int) arg);
+    NSData *data = nil;
+    if (req->response_code != HTTP_OK) {
+        fprintf(stderr, "FAILED to get OK\n");
+    }
+    else if (evhttp_find_header(req->input_headers, "Content-Type") == NULL) {
+        fprintf(stderr, "FAILED to find Content-Type\n");
+    }
+    else {
+        data = [NSData dataWithBytes:EVBUFFER_DATA(req->input_buffer) length:EVBUFFER_LENGTH(req->input_buffer)];
+    }
+    NuBlock *block = (NuBlock *) arg;
+    NuCell *args = [[NuCell alloc] init];
+    [args setCar:data];
+    [block evalWithArguments:args context:nil];
+    [block release];
+    // leaking...
+    //evhttp_connection_free(req->evcon);
+}
+
+- (void) getResourceFromHost:(NSString *) host address:(NSString *) address port:(int)port path:(NSString *)path andDo:(NuBlock *) block
+{
+    struct evhttp_connection *evcon = evhttp_connection_new([address cStringUsingEncoding:NSUTF8StringEncoding], port);
+    if (evcon == NULL) {
+        fprintf(stdout, "FAILED to connect\n");
+        return;
+    }
+    /*
+     * At this point, we want to schedule a request to the HTTP
+     * server using our make request method.
+     */
+    [block retain];
+    struct evhttp_request *req = evhttp_request_new(nu_http_request_done, block);
+    /* Add the information that we care about */
+    evhttp_add_header(req->output_headers, "Host", [host cStringUsingEncoding:NSUTF8StringEncoding]);
+    /* We give ownership of the request to the connection */
+    if (evhttp_make_request(evcon, req, EVHTTP_REQ_GET, [path cStringUsingEncoding:NSUTF8StringEncoding]) == -1) {
+        fprintf(stdout, "FAILED to make the request \n");
+    }
 }
 
 @end

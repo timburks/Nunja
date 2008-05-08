@@ -161,6 +161,10 @@
             (then (set BODY (eval @statements)))          ;; deprecated, evaluates statements in the instance method context
             (else (set BODY (@statements @match request response)))) ;; new style, evaluates a function with a lexical closure
         
+        (unless BODY
+                (puts "returning early, leaving connection open")
+                (return))
+        
         (if (BODY isKindOfClass:NSString)
             (then (set html "<head>\n")
                   (if (response "HEAD")
@@ -193,7 +197,7 @@
      (- (id) initWithSite:(id) site is
         (self init)
         (set @handlers (array))
-        (set $nunja self)
+        (set $nunjaDelegate self)
         (set @root site)
         (load (+ site "/site.nu"))
         self)
@@ -229,11 +233,11 @@
                  (then
                       (set __pattern    (eval (car margs)))
                       (set __statements (cdr margs))
-                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__statements)))
+                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__statements)))
                  (else
                       (set __pattern    (eval (car margs)))
                       (set __function (eval (append '(do (MATCH REQUEST RESPONSE) (nunja-site-prefix)) (cdr margs))))
-                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__function))))))
+                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__function))))))
 
 ;; Declare a post action.
 (global post
@@ -242,14 +246,14 @@
                  (then
                       (set __pattern    (eval (car margs)))
                       (set __statements (cdr margs))
-                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__statements)))
+                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__statements)))
                  (else
                       (set __pattern    (eval (car margs)))
                       (set __function (eval (append '(do (MATCH REQUEST RESPONSE) (nunja-site-prefix)) (cdr margs))))
-                      (($nunja handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__function))))))
+                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__function))))))
 
 ;; Set the top-level directory for a site
 (global root
         (macro _
-             ($nunja setRoot:(eval (car margs)))))
+             ($nunjaDelegate setRoot:(eval (car margs)))))
 
