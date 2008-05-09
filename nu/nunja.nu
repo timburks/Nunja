@@ -161,9 +161,7 @@
             (then (set BODY (eval @statements)))          ;; deprecated, evaluates statements in the instance method context
             (else (set BODY (@statements @match request response)))) ;; new style, evaluates a function with a lexical closure
         
-        (unless BODY
-                (puts "returning early, leaving connection open")
-                (return))
+        (unless BODY (return)) ;; return early and leave connection open, this expects the handler to have created a closure
         
         (if (BODY isKindOfClass:NSString)
             (then (set html "<head>\n")

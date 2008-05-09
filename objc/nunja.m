@@ -28,29 +28,6 @@ limitations under the License.
 #import <Foundation/Foundation.h>
 #import <Nu/Nu.h>
 
-static bool verbose_nunja = false;
-
-@interface NunjaRequest : NSObject
-{
-    struct evhttp_request *req;
-}
-
-@end
-
-@implementation NunjaRequest
-
-- (id) initWithRequest:(struct evhttp_request *)r
-{
-    [super init];
-    req = r;
-    return self;
-}
-
-- (NSString *) uri
-{
-    return [NSString stringWithCString:evhttp_request_uri(req) encoding:NSUTF8StringEncoding];
-}
-
 void NunjaInit()
 {
     static initialized = 0;
@@ -58,6 +35,35 @@ void NunjaInit()
         initialized = 1;
         [Nu loadNuFile:@"nunja" fromBundleWithIdentifier:@"nu.programming.nunja" withContext:nil];
     }
+}
+
+@class Nunja;
+
+static bool verbose_nunja = false;
+
+@interface NunjaRequest : NSObject
+{
+    Nunja *nunja;
+    struct evhttp_request *req;
+}
+
+@end
+
+@implementation NunjaRequest
+
+- (id) initWithNunja:(Nunja *)n request:(struct evhttp_request *)r
+{
+    [super init];
+    nunja = n;
+    req = r;
+    return self;
+}
+
+- (Nunja *) nunja {return nunja;}
+
+- (NSString *) uri
+{
+    return [NSString stringWithCString:evhttp_request_uri(req) encoding:NSUTF8StringEncoding];
 }
 
 - (NSData *) body
@@ -163,11 +169,9 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 - (void) handleRequest:(NunjaRequest *)request;
 @end
 
-struct event_base *event_base;
-
 @interface Nunja : NSObject
 {
-
+    struct event_base *event_base;
     struct evhttp *httpd;
     id<NSObject,NunjaDelegate> delegate;
 }
@@ -195,7 +199,7 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
 
     id delegate = [nunja delegate];
     if (delegate) {
-        [delegate handleRequest:[[[NunjaRequest alloc] initWithRequest:req] autorelease]];
+        [delegate handleRequest:[[[NunjaRequest alloc] initWithNunja:nunja request:req] autorelease]];
     }
     else {
         nunja_response_helper(req, HTTP_OK, @"OK",
@@ -250,50 +254,45 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
 static void nunja_dns_gethostbyname_cb(int result, char type, int count, int ttl, void *addresses, void *arg)
 {
     id address = nil;
-
     if (result == DNS_ERR_TIMEOUT) {
         fprintf(stdout, "[Timed out] ");
-        goto out;
     }
-
-    if (result != DNS_ERR_NONE) {
+    else if (result != DNS_ERR_NONE) {
         fprintf(stdout, "[Error code %d] ", result);
-        goto out;
     }
-
-    fprintf(stderr, "type: %d, count: %d, ttl: %d: ", type, count, ttl);
-
-    switch (type) {
-        case DNS_IPv4_A:
-        {
-            struct in_addr *in_addrs = addresses;
-            int i;
-            /* a resolution that's not valid does not help */
-            if (ttl < 0)
-                goto out;
-            if (count == 0)
-                goto out;
-            address = [NSString stringWithFormat:@"%s", inet_ntoa(in_addrs[0])];
-            break;
+    else {
+        fprintf(stdout, "type: %d, count: %d, ttl: %d\n", type, count, ttl);
+        switch (type) {
+            case DNS_IPv4_A:
+            {
+                struct in_addr *in_addrs = addresses;
+                if (ttl < 0) {
+                    // invalid resolution
+                }
+                else if (count == 0) {
+                    // no addresses
+                }
+                else {
+                    address = [NSString stringWithFormat:@"%s", inet_ntoa(in_addrs[0])];
+                }
+                break;
+            }
+            case DNS_PTR:
+                /* may get at most one PTR */
+                // this needs review. TB.
+                if (count == 1)
+                    fprintf(stdout, "addresses: %s ", *(char **)addresses);
+                break;
+            default:
+                break;
         }
-        case DNS_PTR:
-            /* may get at most one PTR */
-            if (count != 1)
-                goto out;
-
-            fprintf(stderr, "%s ", *(char **)addresses);
-            break;
-        default:
-            goto out;
     }
-    out:
-    {
-        NuBlock *block = (NuBlock *) arg;
-        NuCell *args = [[NuCell alloc] init];
-        [args setCar:address];
-        [block evalWithArguments:args context:nil];
-        [block release];
-    }
+    NuBlock *block = (NuBlock *) arg;
+    NuCell *args = [[NuCell alloc] init];
+    [args setCar:address];
+    [block evalWithArguments:args context:nil];
+    [block release];
+    [args release];
 }
 
 - (void) resolveDomainName:(NSString *) name andDo:(NuBlock *) block
@@ -302,16 +301,15 @@ static void nunja_dns_gethostbyname_cb(int result, char type, int count, int ttl
     evdns_resolve_ipv4([name cStringUsingEncoding:NSUTF8StringEncoding], 0, nunja_dns_gethostbyname_cb, block);
 }
 
-void
-nu_http_request_done(struct evhttp_request *req, void *arg)
+void nunja_http_request_done(struct evhttp_request *req, void *arg)
 {
-    printf("received %d\n", (int) arg);
+    fprintf(stdout, "received %d bytes\n", (int) arg);
     NSData *data = nil;
     if (req->response_code != HTTP_OK) {
-        fprintf(stderr, "FAILED to get OK\n");
+        fprintf(stdout, "FAILED to get OK\n");
     }
     else if (evhttp_find_header(req->input_headers, "Content-Type") == NULL) {
-        fprintf(stderr, "FAILED to find Content-Type\n");
+        fprintf(stdout, "FAILED to find Content-Type\n");
     }
     else {
         data = [NSData dataWithBytes:EVBUFFER_DATA(req->input_buffer) length:EVBUFFER_LENGTH(req->input_buffer)];
@@ -321,26 +319,29 @@ nu_http_request_done(struct evhttp_request *req, void *arg)
     [args setCar:data];
     [block evalWithArguments:args context:nil];
     [block release];
+    [args release];
+    fprintf(stdout, "end of callback\n");
     // leaking...
     //evhttp_connection_free(req->evcon);
 }
 
 - (void) getResourceFromHost:(NSString *) host address:(NSString *) address port:(int)port path:(NSString *)path andDo:(NuBlock *) block
 {
+    [block retain];
+    // make the connection
     struct evhttp_connection *evcon = evhttp_connection_new([address cStringUsingEncoding:NSUTF8StringEncoding], port);
     if (evcon == NULL) {
         fprintf(stdout, "FAILED to connect\n");
+        NuCell *args = [[NuCell alloc] init];
+        [block evalWithArguments:args context:nil];
+        [block release];
+        [args release];
         return;
     }
-    /*
-     * At this point, we want to schedule a request to the HTTP
-     * server using our make request method.
-     */
-    [block retain];
-    struct evhttp_request *req = evhttp_request_new(nu_http_request_done, block);
-    /* Add the information that we care about */
+    // make the request
+    struct evhttp_request *req = evhttp_request_new(nunja_http_request_done, block);
     evhttp_add_header(req->output_headers, "Host", [host cStringUsingEncoding:NSUTF8StringEncoding]);
-    /* We give ownership of the request to the connection */
+    // give ownership of the request to the connection
     if (evhttp_make_request(evcon, req, EVHTTP_REQ_GET, [path cStringUsingEncoding:NSUTF8StringEncoding]) == -1) {
         fprintf(stdout, "FAILED to make the request \n");
     }

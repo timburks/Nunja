@@ -154,30 +154,32 @@ END)
                         else (size doubleValue)))
      (set data (NSData dataWithSize:(* megabytes 1024 1024))))
 
+;; perform a dns lookup
+;; ex: /dns/programming.nu
 (get (regex -"/dns/(.*)")
-     (puts (REQUEST description))
      (set hostname (MATCH groupAtIndex:1))
-     ($nunja resolveDomainName:hostname andDo:
-             (do (address)
-                 (if address
-                     (REQUEST respondWithString:"resolved #{hostname} as #{address}")
-                     else
-                     (REQUEST respondWithString:"unable to resolve #{hostname}"))))
-     nil)
+     ((REQUEST nunja) resolveDomainName:hostname andDo:
+      (do (address)
+          (if address
+              (REQUEST respondWithString:"resolved #{hostname} as #{address}")
+              else
+              (REQUEST respondWithString:"unable to resolve #{hostname}"))))
+     nil) ;; return nil to leave the connection open
 
+;; request and return a resource from a specified host
+;; ex: /proxy/programming.nu/about
 (get (regex -"/proxy/([^\/]+)/(.*)")
-     (puts (REQUEST description))
      (set host (MATCH groupAtIndex:1))
      (set path (+ "/" (MATCH groupAtIndex:2)))
-     ($nunja resolveDomainName:host andDo:
-             (do (address)
-                 (if address
-                     (then ($nunja getResourceFromHost:host address:address port:80 path:path andDo:
-                                   (do (data)
-                                       (if data
-                                           (then (REQUEST respondWithData:data))
-                                           (else (REQUEST respondWithString:"unable to load #{path}"))))))
-                     (else (REQUEST respondWithString:"unable to resolve host #{host}")))))
-     nil)
+     ((REQUEST nunja) resolveDomainName:host andDo:
+      (do (address)
+          (if address
+              (then ((REQUEST nunja) getResourceFromHost:host address:address port:80 path:path andDo:
+                     (do (data)
+                         (if data
+                             (then (REQUEST respondWithData:data))
+                             (else (REQUEST respondWithString:"unable to load #{path}"))))))
+              (else (REQUEST respondWithString:"unable to resolve host #{host}")))))
+     nil) ;; return nil to leave the connection open
 
 
