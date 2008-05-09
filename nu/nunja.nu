@@ -217,6 +217,7 @@
                       (then
                            (set data (NSData dataWithContentsOfFile:filename))
                            (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
+                           (request setValue:"max-age=3600, must-revalidate" forResponseHeader:"Cache-Control")
                            (request respondWithData:data))
                       (else
                            (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
