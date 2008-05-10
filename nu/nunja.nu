@@ -164,14 +164,14 @@
         (unless BODY (return)) ;; return early and leave connection open, this expects the handler to have created a closure
         
         (if (BODY isKindOfClass:NSString)
-            (then (set html "<head>\n")
+            (then (set html "<html>\n<head>\n")
                   (if (response "HEAD")
                       (then (html appendString:(response "HEAD")))
                       (else (if HEAD (html appendString:HEAD))))
                   (if (response "TITLE")
-                      (then (html appendString:(+ "<title>" (response "TITLE") "</title>")))
-                      (else (if TITLE (html appendString:(+ "<title>" TITLE "</title>")))))
-                  (html appendString: (+ "</head>\n<body>\n" BODY "</body>\n"))
+                      (then (html appendString:(+ "\n<title>" (response "TITLE") "</title>")))
+                      (else (if TITLE (html appendString:(+ "\n<title>" TITLE "</title>")))))
+                  (html appendString: (+ "</head>\n<body>\n" BODY "\n</body>\n</html>\n"))
                   (request respondWithString:html))
             (else (request respondWithData:BODY))))
      
