@@ -6,11 +6,11 @@
 (case SYSTEM
       ("Darwin"
                (set @cflags "-g -DDARWIN")
-               (set @ldflags  "-framework Foundation -framework Nu -levent"))
+               (set @ldflags  "-framework Foundation -framework Nu -levent -lcrypto"))
       ("Linux"
 	      (set @arch (list "i386"))
               (set @cflags "-g -DLINUX -I/usr/local/include -fconstant-string-class=NSConstantString ")
-              (set @ldflags "-L/usr/local/lib -lNuFound -lNu -levent"))
+              (set @ldflags "-L/usr/local/lib -lNuFound -lNu -levent -lcrypto"))
       (else nil))
 
 ;; framework description

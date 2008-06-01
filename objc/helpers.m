@@ -18,6 +18,7 @@ limitations under the License.
 
 #import "helpers.h"
 #import <arpa/inet.h>
+#import <openssl/md5.h>
 
 static unichar char_to_int(unichar c)
 {
@@ -172,7 +173,7 @@ static NSMutableDictionary *parseHeaders(const char *headers)
     return dict;
 }
 
-@implementation NSData (NuHTTP)
+@implementation NSData (Nunja)
 - (NSDictionary *) urlQueryDictionary
 {
     NSString *string = [[[NSString alloc] initWithData:self encoding:NSUTF8StringEncoding] autorelease];
@@ -248,14 +249,39 @@ static NSMutableDictionary *parseHeaders(const char *headers)
     return dict;
 }
 
-@end
-
-@implementation NSData (Nunja)
-
-+ dataWithSize:(int) size
++ (NSData *) dataWithSize:(int) size
 {
     const char *bytes = (char *) malloc (size * sizeof(char));
     return [self dataWithBytesNoCopy:bytes length:size freeWhenDone:YES];
+}
+
+static const char *const digits = "0123456789abcdef";
+
+- (NSString*) hex
+{
+    NSString *result = nil;
+    size_t length = [self length];
+    if (0 != length) {
+        NSMutableData *temp = [NSMutableData dataWithLength:(length << 1)];
+        if (temp) {
+            const unsigned char *src = [self bytes];
+            unsigned char *dst = [temp mutableBytes];
+            if (src && dst) {
+                while (length-- > 0) {
+                    *dst++ = digits[(*src >> 4) & 0x0f];
+                    *dst++ = digits[(*src++ & 0x0f)];
+                }
+                result = [[NSString alloc] initWithData:temp encoding:NSUTF8StringEncoding];
+            }
+        }
+    }
+    return (result) ? [result autorelease] : result;
+}
+
+- (NSData *) md5
+{
+   unsigned char *digest = MD5([self bytes], [self length], NULL);
+   return [NSData dataWithBytes:digest length:16];
 }
 
 @end
