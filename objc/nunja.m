@@ -21,6 +21,7 @@ limitations under the License.
 #include <sys/queue.h>
 #include <event.h>
 #include <evhttp.h>
+#define HTTP_SEEOTHER 303
 
 #include <netdb.h>
 #include <evdns.h>
@@ -89,7 +90,7 @@ static bool verbose_nunja = false;
     }
 }
 
-- (NSDictionary *) requestHeaders
+static NSDictionary *nunja_request_headers_helper(struct evhttp_request *req)
 {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     struct evkeyval *header;
@@ -98,6 +99,20 @@ static bool verbose_nunja = false;
             forKey:[NSString stringWithCString:header->key encoding:NSUTF8StringEncoding]];
     }
     return dict;
+}
+
+- (NSDictionary *) requestHeaders
+{
+    return nunja_request_headers_helper(req);
+    /* 
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        struct evkeyval *header;
+        TAILQ_FOREACH(header, req->input_headers, next) {
+            [dict setObject:[NSString stringWithCString:header->value encoding:NSUTF8StringEncoding]
+                forKey:[NSString stringWithCString:header->key encoding:NSUTF8StringEncoding]];
+        }
+        return dict;
+    */
 }
 
 static NSDictionary *nunja_response_headers_helper(struct evhttp_request *req)
@@ -306,7 +321,13 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
     fprintf(stdout, "received %d bytes\n", (int) arg);
     NSData *data = nil;
     if (req->response_code != HTTP_OK) {
-        fprintf(stdout, "FAILED to get OK\n");
+        if (req->response_code == HTTP_SEEOTHER) {
+            fprintf(stdout, "REDIRECTING\n");
+            NSDictionary *headers = nunja_request_headers_helper(req);
+            NSLog(@"%@", [headers description]);
+            return;                               // this is not handled yet.
+        }
+        fprintf(stdout, "FAILED to get OK (response = %d)\n", req->response_code);
     }
     else if (evhttp_find_header(req->input_headers, "Content-Type") == NULL) {
         fprintf(stdout, "FAILED to find Content-Type\n");
@@ -343,6 +364,30 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Host", [host cStringUsingEncoding:NSUTF8StringEncoding]);
     // give ownership of the request to the connection
     if (evhttp_make_request(evcon, req, EVHTTP_REQ_GET, [path cStringUsingEncoding:NSUTF8StringEncoding]) == -1) {
+        fprintf(stdout, "FAILED to make the request \n");
+    }
+}
+
+- (void) postDataToHost:(NSString *) host address:(NSString *) address port:(int)port path:(NSString *)path data:(NSData *) data andDo:(NuBlock *) block
+{
+    [block retain];
+    // make the connection
+    struct evhttp_connection *evcon = evhttp_connection_new([address cStringUsingEncoding:NSUTF8StringEncoding], port);
+    if (evcon == NULL) {
+        fprintf(stdout, "FAILED to connect\n");
+        NuCell *args = [[NuCell alloc] init];
+        [block evalWithArguments:args context:nil];
+        [block release];
+        [args release];
+        return;
+    }
+    // make the request
+    struct evhttp_request *req = evhttp_request_new(nunja_http_request_done, block);
+    evhttp_add_header(req->output_headers, "Host", [host cStringUsingEncoding:NSUTF8StringEncoding]);
+    evbuffer_add(req->output_buffer, [data bytes], [data length]);
+
+    // give ownership of the request to the connection
+    if (evhttp_make_request(evcon, req, EVHTTP_REQ_POST, [path cStringUsingEncoding:NSUTF8StringEncoding]) == -1) {
         fprintf(stdout, "FAILED to make the request \n");
     }
 }

@@ -76,7 +76,7 @@ HTML)
                         (set sessionCookie (NunjaCookie cookieForUser:username))
                         (sessionCookies setObject:sessionCookie forKey:(sessionCookie value))
                         (REQUEST setValue:(sessionCookie stringValue) forResponseHeader:"Set-Cookie")
-                        (Nunja redirectResponse:REQUEST toLocation:"/"))
+                        (Nunja redirectResponse:REQUEST toLocation:"/login"))
                    (else
                         (RESPONSE setValue:"Please try again" forKey:"TITLE")
                         <<-HTML
@@ -175,6 +175,21 @@ END)
       (do (address)
           (if address
               (then ((REQUEST nunja) getResourceFromHost:host address:address port:80 path:path andDo:
+                     (do (data)
+                         (if data
+                             (then (REQUEST respondWithData:data))
+                             (else (REQUEST respondWithString:"unable to load #{path}"))))))
+              (else (REQUEST respondWithString:"unable to resolve host #{host}")))))
+     nil) ;; return nil to leave the connection open
+
+(get (regex -"/posttest")
+     (set host "localhost")
+     (set path "/login")
+     ((REQUEST nunja) resolveDomainName:host andDo:
+      (do (address)
+          (if address
+              (set postdata (((dict username:"bob" password:"bob") urlQueryString) dataUsingEncoding:NSUTF8StringEncoding))
+              (then ((REQUEST nunja) postDataToHost:host address:address port:3000 path:path data:postdata andDo:
                      (do (data)
                          (if data
                              (then (REQUEST respondWithData:data))
