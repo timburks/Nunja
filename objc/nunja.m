@@ -384,6 +384,8 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
     // make the request
     struct evhttp_request *req = evhttp_request_new(nunja_http_request_done, block);
     evhttp_add_header(req->output_headers, "Host", [host cStringUsingEncoding:NSUTF8StringEncoding]);
+    evhttp_add_header(req->output_headers, "Content-Length", [[NSString stringWithFormat:@"%d", [data length]] cStringUsingEncoding:NSUTF8StringEncoding]);
+    evhttp_add_header(req->output_headers, "Content-Type", "application/x-www-form-urlencoded");
     evbuffer_add(req->output_buffer, [data bytes], [data length]);
 
     // give ownership of the request to the connection
