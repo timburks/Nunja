@@ -76,7 +76,7 @@ HTML)
                         (set sessionCookie (NunjaCookie cookieForUser:username))
                         (sessionCookies setObject:sessionCookie forKey:(sessionCookie value))
                         (REQUEST setValue:(sessionCookie stringValue) forResponseHeader:"Set-Cookie")
-                        (Nunja redirectResponse:REQUEST toLocation:"/login"))
+                        (Nunja redirectResponse:REQUEST toLocation:"/"))
                    (else
                         (RESPONSE setValue:"Please try again" forKey:"TITLE")
                         <<-HTML
@@ -197,4 +197,11 @@ END)
               (else (REQUEST respondWithString:"unable to resolve host #{host}")))))
      nil) ;; return nil to leave the connection open
 
+(global upload-count 0)
 
+(post "/upload"
+      (REQUEST setValue:"text/plain" forResponseHeader:"Content-Type")
+      (set response "uploading item #{(global upload-count (+ upload-count 1))}\n#{((NSDate date) description)}\n")
+      (response appendString:((REQUEST requestHeaders) description))
+      (response appendString:"\n")
+      response)

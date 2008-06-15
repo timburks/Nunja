@@ -149,6 +149,8 @@
                         (else nil)))
             (else nil)))
      
+     (set text-html-pattern (regex "^text/html.*$"))
+     
      ;; Handle a request. Used internally.
      (- (id)handleRequest:(id)request is
         (if (Nunja verbose)
@@ -163,18 +165,28 @@
         
         (unless BODY (return)) ;; return early and leave connection open, this expects the handler to have created a closure
         
-        (if (BODY isKindOfClass:NSString)
-            (then (set html "<html>\n<head>\n")
-                  (if (response "HEAD")
-                      (then (html appendString:(response "HEAD")))
-                      (else (if HEAD (html appendString:HEAD))))
-                  (if (response "TITLE")
-                      (then (html appendString:(+ "\n<title>" (response "TITLE") "</title>")))
-                      (else (if TITLE (html appendString:(+ "\n<title>" TITLE "</title>")))))
-                  (html appendString: (+ "</head>\n<body>\n" BODY "\n</body>\n</html>\n"))
-                  (request respondWithString:html))
-            (else (request respondWithData:BODY))))
-     
+        (cond ;; return data objects as-is
+              ((BODY isKindOfClass:NSData)
+               (request respondWithData:BODY))
+              ;; return non-strings as their stringValues
+              ((not (BODY isKindOfClass:NSString))
+               (request respondWithString:(BODY stringValue)))
+              ;; if a content type is set and it isn't text/html, return string as-is
+              ((and (set content-type (request valueForResponseHeader:"Content-Type"))
+                    (not (text-html-pattern findInString:content-type)))
+               (request respondWithString:BODY))
+              ;; otherwise, return the string wrapped in html tags
+              (else
+                   (set html "<html>\n<head>\n")
+                   (if (response "HEAD")
+                       (then (html appendString:(response "HEAD")))
+                       (else (if HEAD (html appendString:HEAD))))
+                   (if (response "TITLE")
+                       (then (html appendString:(+ "\n<title>" (response "TITLE") "</title>")))
+                       (else (if TITLE (html appendString:(+ "\n<title>" TITLE "</title>")))))
+                   (html appendString: (+ "</head>\n<body>\n" BODY "\n</body>\n</html>\n"))
+                   (request respondWithString:html))))
+          
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
      (- (id)redirectResponse:(id)request toLocation:(id)location is
         (request setValue:location forResponseHeader:"Location")

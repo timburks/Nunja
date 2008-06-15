@@ -40,7 +40,7 @@ void NunjaInit()
 
 @class Nunja;
 
-static bool verbose_nunja = false;
+static BOOL verbose_nunja = NO;
 
 @interface NunjaRequest : NSObject
 {
@@ -104,15 +104,6 @@ static NSDictionary *nunja_request_headers_helper(struct evhttp_request *req)
 - (NSDictionary *) requestHeaders
 {
     return nunja_request_headers_helper(req);
-    /* 
-        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-        struct evkeyval *header;
-        TAILQ_FOREACH(header, req->input_headers, next) {
-            [dict setObject:[NSString stringWithCString:header->value encoding:NSUTF8StringEncoding]
-                forKey:[NSString stringWithCString:header->key encoding:NSUTF8StringEncoding]];
-        }
-        return dict;
-    */
 }
 
 static NSDictionary *nunja_response_headers_helper(struct evhttp_request *req)
@@ -134,6 +125,12 @@ static NSDictionary *nunja_response_headers_helper(struct evhttp_request *req)
 - (int) setValue:(const char *) value forResponseHeader:(const char *) key
 {
     return evhttp_add_header(req->output_headers, key, value);
+}
+
+- (NSString *) valueForResponseHeader:(const char *) key
+{
+    const char *value = evhttp_find_header(req->output_headers, key);
+    return value ? [NSString stringWithCString:value encoding:NSUTF8StringEncoding] : nil;
 }
 
 - (int) removeResponseHeader:(const char *) key
@@ -196,12 +193,12 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 
 @implementation Nunja
 
-+ (void) setVerbose:(bool) v
++ (void) setVerbose:(BOOL) v
 {
     verbose_nunja = v;
 }
 
-+ (bool) verbose {return verbose_nunja;}
++ (BOOL) verbose {return verbose_nunja;}
 
 + (void) load
 {
