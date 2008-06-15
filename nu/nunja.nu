@@ -184,9 +184,15 @@
                    (if (response "TITLE")
                        (then (html appendString:(+ "\n<title>" (response "TITLE") "</title>")))
                        (else (if TITLE (html appendString:(+ "\n<title>" TITLE "</title>")))))
-                   (html appendString: (+ "</head>\n<body>\n" BODY "\n</body>\n</html>\n"))
+                   (set bodyAttributes (response "BODY_ATTRIBUTES"))
+                   (html appendString:"</head>\n")
+                   (if bodyAttributes
+                       (then (html appendString:"<body #{bodyAttributes}>\n"))
+                       (else (html appendString:"<body>\n")))
+                   (html appendString:BODY)
+                   (html appendString:"\n</body>\n</html>\n")
                    (request respondWithString:html))))
-          
+     
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
      (- (id)redirectResponse:(id)request toLocation:(id)location is
         (request setValue:location forResponseHeader:"Location")
