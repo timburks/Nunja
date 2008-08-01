@@ -120,7 +120,7 @@ static char int_to_char[] = "0123456789ABCDEF";
 - (NSString *) urlQueryString
 {
     NSMutableString *result = [NSMutableString string];
-    NSEnumerator *keyEnumerator = [[self allKeys] objectEnumerator];
+    NSEnumerator *keyEnumerator = [[[self allKeys] sortedArrayUsingSelector:@selector(compare:)] objectEnumerator];
     id key;
     while (key = [keyEnumerator nextObject]) {
         if ([result length] > 0) [result appendString:@"&"];
@@ -130,6 +130,8 @@ static char int_to_char[] = "0123456789ABCDEF";
 }
 
 @end
+
+
 
 static NSMutableDictionary *parseHeaders(const char *headers)
 {
