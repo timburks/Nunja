@@ -124,7 +124,7 @@ static char int_to_char[] = "0123456789ABCDEF";
     id key;
     while (key = [keyEnumerator nextObject]) {
         if ([result length] > 0) [result appendString:@"&"];
-        [result appendString:[NSString stringWithFormat:@"%@=%@", [key urlEncode], [[self objectForKey:key] urlEncode]]];
+        [result appendString:[NSString stringWithFormat:@"%@=%@", [key urlEncode], [[[self objectForKey:key] stringValue] urlEncode]]];
     }
     return [NSString stringWithString:result];
 }
