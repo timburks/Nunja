@@ -29,6 +29,7 @@ limitations under the License.
 
 #import <Foundation/Foundation.h>
 #import <Nu/Nu.h>
+#import "nunja.h"
 
 void NunjaInit()
 {
@@ -40,6 +41,9 @@ void NunjaInit()
 }
 
 @class Nunja;
+
+@implementation SuperNunja
+@end
 
 static BOOL verbose_nunja = NO;
 static BOOL local_nunja = NO;
@@ -192,7 +196,7 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 - (void) handleRequest:(NunjaRequest *)request;
 @end
 
-@interface Nunja : NSObject
+@interface Nunja : SuperNunja
 {
     struct event_base *event_base;
     struct evhttp *httpd;
