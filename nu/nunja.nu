@@ -154,7 +154,8 @@
      ;; Handle a request. Used internally.
      (- (id)handleRequest:(id)request is
         (if (Nunja verbose)
-            (NSLog "handling request #{(request uri)}"))
+            (NSLog "handling request #{(request uri)}")
+            (NSLog "request from host #{(request remoteHost)} port #{(request remotePort)}"))
         (set response (dict))
         (set HEAD nil)
         (set TITLE nil)

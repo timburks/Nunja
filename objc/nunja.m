@@ -22,6 +22,7 @@ limitations under the License.
 #include <event.h>
 #include <evhttp.h>
 #define HTTP_SEEOTHER 303
+#define HTTP_DENIED 403
 
 #include <netdb.h>
 #include <evdns.h>
@@ -41,6 +42,7 @@ void NunjaInit()
 @class Nunja;
 
 static BOOL verbose_nunja = NO;
+static BOOL local_nunja = NO;
 
 @interface NunjaRequest : NSObject
 {
@@ -88,6 +90,15 @@ static BOOL verbose_nunja = NO;
         default:
             return @"UNKNOWN";
     }
+}
+
+- (NSString *) remoteHost
+{
+    return [NSString stringWithCString:req->remote_host encoding:NSUTF8StringEncoding];
+}
+
+- (int) remotePort {
+    return req->remote_port;
 }
 
 static NSDictionary *nunja_request_headers_helper(struct evhttp_request *req)
@@ -200,6 +211,13 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 
 + (BOOL) verbose {return verbose_nunja;}
 
++ (void) setLocalOnly:(BOOL) l
+{
+    local_nunja = l;
+}
+
++ (BOOL) localOnly {return local_nunja;}
+
 + (void) load
 {
     NunjaInit();
@@ -208,7 +226,6 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointer)
 {
     Nunja *nunja = (Nunja *) nunja_pointer;
-
     id delegate = [nunja delegate];
     if (delegate) {
         [delegate handleRequest:[[[NunjaRequest alloc] initWithNunja:nunja request:req] autorelease]];

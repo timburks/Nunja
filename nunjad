@@ -46,6 +46,8 @@
              ("--site"    (set argi (+ argi 1)) (set site (argv argi)))
              ("-p"        (set argi (+ argi 1)) (set port ((argv argi) intValue)))
              ("--port"    (set argi (+ argi 1)) (set port ((argv argi) intValue)))
+	     ("-l"        (Nunja setLocalOnly:YES))
+	     ("--local"   (Nunja setLocalOnly:YES))
              ("-v"        (Nunja setVerbose:YES))
              ("--verbose" (Nunja setVerbose:YES))
              (else (puts (+ "unknown option: " (argv argi)))
@@ -53,7 +55,10 @@
        (set argi (+ argi 1)))
 
 (set n ((Nunja alloc) init))
-(n bindToAddress:"0.0.0.0" port:port)
+(if (Nunja localOnly)
+    (then (n bindToAddress:"127.0.0.1" port:port))
+    (else (n bindToAddress:"0.0.0.0" port:port)))
+
 (if site
     (n setDelegate:((NunjaDelegate alloc) initWithSite:site)))
 (puts (+ "Nunja is running on port " port))
