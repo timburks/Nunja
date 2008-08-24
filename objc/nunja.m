@@ -47,6 +47,7 @@ void NunjaInit()
 
 static BOOL verbose_nunja = NO;
 static BOOL local_nunja = NO;
+static BOOL autotags = YES;
 
 @interface NunjaRequest : NSObject
 {
@@ -221,6 +222,13 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 }
 
 + (BOOL) localOnly {return local_nunja;}
+
++ (void) setAutotags:(BOOL) a
+{
+    autotags = a;
+}
+
++ (BOOL) autotags {return autotags;}
 
 + (void) load
 {

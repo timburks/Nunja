@@ -176,8 +176,10 @@
               ((and (set content-type (request valueForResponseHeader:"Content-Type"))
                     (not (text-html-pattern findInString:content-type)))
                (request respondWithString:BODY))
-              ;; otherwise, return the string wrapped in html tags
               (else
+(if (Nunja autotags)
+    (then
+                   ;; return the string wrapped in html tags
                    (set html "<html>\n<head>\n")
                    (if (response "HEAD")
                        (then (html appendString:(response "HEAD")))
@@ -191,7 +193,8 @@
                        (then (html appendString:"<body #{bodyAttributes}>\n"))
                        (else (html appendString:"<body>\n")))
                    (html appendString:BODY)
-                   (html appendString:"\n</body>\n</html>\n")
+                   (html appendString:"\n</body>\n</html>\n"))
+   (else (set html BODY)))
                    (request respondWithString:html))))
      
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
@@ -232,6 +235,7 @@
             (then ((matches 0) handleRequest:request))
             (else ;; look for a file that matches the path
                   (set filename (+ @root "/public" path))
+(NSLog filename)
                   (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
                       (then
                            (set data (NSData dataWithContentsOfFile:filename))
