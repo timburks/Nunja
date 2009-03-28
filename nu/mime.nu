@@ -41,6 +41,7 @@
            "js"    "text/javascript"
            "lha"   "application/octet-stream"
            "lzh"   "application/octet-stream"
+           "mobileconfig"   "application/x-apple-aspen-config"
            "mov"   "video/quicktime"
            "mpe"   "video/mpeg"
            "mpeg"  "video/mpeg"
