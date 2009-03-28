@@ -246,7 +246,7 @@
 
 ;; Declare a get action.
 (global get
-        (macro _
+        (macro-0 _
              (if $do-it-the-old-way
                  (then
                       (set __pattern    (eval (car margs)))
@@ -259,7 +259,7 @@
 
 ;; Declare a post action.
 (global post
-        (macro _
+        (macro-0 _
              (if $do-it-the-old-way
                  (then
                       (set __pattern    (eval (car margs)))
@@ -272,6 +272,6 @@
 
 ;; Set the top-level directory for a site
 (global root
-        (macro _
+        (macro-0 _
              ($nunjaDelegate setRoot:(eval (car margs)))))
 
