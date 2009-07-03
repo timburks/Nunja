@@ -5,7 +5,7 @@
 (set SYSTEM ((NSString stringWithShellCommand:"uname") chomp))
 (case SYSTEM
       ("Darwin"
-               (set @cflags "-g -DDARWIN")
+               (set @cflags "-g -fobjc-gc -DDARWIN")
                (set @ldflags  "-framework Foundation -framework Nu -levent -lcrypto"))
       ("Linux"
 	      (set @arch (list "i386"))
