@@ -89,6 +89,8 @@
 ;; @discussion A class for managing requests received by the server.
 (class NunjaRequest
      (ivar (id) cookies)
+     (ivar (id) parameters)
+     (ivar-accessors)
      
      (- (id) cookies is
         (unless @cookies
@@ -140,9 +142,17 @@
      
      ;; Try to match the handler against a specified action and path. Used internally.
      (- (id)matchAction:(id)action path:(id)path is
-        (if (eq @action action)
+        (set splitpath (path componentsSeparatedByString:"?"))
+        (if (or (eq @action action)
+                (and (eq action "HEAD") (eq @action "GET")))
             (then (cond ((@pattern isKindOfClass:NSString)
-                         (set @match (eq @pattern path)))
+                         (set @match (eq @pattern path))
+                         (unless @match
+                            (if (> (splitpath count) 1)
+                                (set @match (eq (splitpath 0) @pattern))
+                                (if @match 
+                                    (set $parameters ((splitpath 1) urlQueryDictionary)))))
+                         @match)
                         ((@pattern isKindOfClass:NuRegex)
                          (set @match (@pattern findInString:path))
                          (eq path (@match group)))
@@ -230,9 +240,12 @@
             (NSLog ((request requestHeaders) description)))
         (request setValue:"Nunja" forResponseHeader:"Server")
         
+(set $parameters (dict))
         (set matches (@handlers select:(do (handler) (handler matchAction:command path:path))))
         (if (matches count)
-            (then ((matches 0) handleRequest:request))
+            (then 
+                (request setParameters:$parameters)
+                ((matches 0) handleRequest:request))
             (else ;; look for a file that matches the path
                   (set filename (+ @root "/public" path))
 (NSLog filename)
