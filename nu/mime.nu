@@ -34,7 +34,7 @@
            "gif"   "image/gif"
            "htm"   "text/html"
            "html"  "text/html"
-		   "ico"   "application/icon"
+           "ico"   "application/icon"
            "jpe"   "image/jpeg"
            "jpeg"  "image/jpeg"
            "jpg"   "image/jpeg"

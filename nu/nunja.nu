@@ -1,6 +1,6 @@
 ;; @file       nunja.nu
 ;; @discussion Nu components of the Nunja web server.
-;; @copyright  Copyright (c) 2008 Neon Design Technology, Inc.
+;; @copyright  Copyright (c) 2008-2009 Neon Design Technology, Inc.
 ;;
 ;;   Licensed under the Apache License, Version 2.0 (the "License");
 ;;   you may not use this file except in compliance with the License.
@@ -89,7 +89,6 @@
 ;; @discussion A class for managing requests received by the server.
 (class NunjaRequest
      (ivar (id) cookies)
-     (ivar (id) parameters)
      (ivar-accessors)
      
      (- (id) cookies is
@@ -113,16 +112,18 @@
         (set d (((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding) urlQueryDictionary))
         (if (Nunja verbose)
             (NSLog (d description)))
-        d))
+        d)
 
-;; An HTTP request handler. Handlers consist of an action, a pattern, and a set of statements.
+     (- (void) setContentType:(id)t is (self setValue:t forResponseHeader:"Content-Type")))
+
+;; An HTTP request handler. Handlers consist of an action, a pattern, and a block.
 ;; The action is an HTTP verb such as "get" or "post", the pattern is either an NSString
-;; or a NuRegex, and the statements are Nu expressions to be evaluated in the request handling.
+;; or a NuRegex, and the block is a NuBlock to be evaluated in the request handling.
 ;; Request handers are typically created using the "get" or "post" macros and are responsible
 ;; for setting the response headers and returning the appropriate response data, which can be
 ;; either raw data (in an NSData object) or a string containing HTML text.
 (class NunjaRequestHandler is NSObject
-     (ivar (id) action (id) pattern (id) statements)
+     (ivar (id) action (id) pattern (id) block (id) keys)
      (ivars)
      (ivar-accessors)
      
@@ -130,33 +131,52 @@
         (NSLog "this should not get called")
         (NSLog "#{key}: #{value}"))
      
-     ;; Create a handler with a specified action, pattern, and statements. Used internally.
-     (+ (id) handlerWithAction:(id)action pattern:(id)pattern statements:(id)statements is
+     ;; Create a handler with a specified action, pattern, and block. Used internally.
+     (+ (id) handlerWithAction:(id)action pattern:(id)pattern block:(id)block is
+        ;; if the pattern is a string that has dynamic parts, turn it into a regex
+        (set keys nil)
+        (if (pattern isKindOfClass:NSString)
+            (set dynamic-part-regex (regex -"/:([^/]*)"))
+            (set tokens (dynamic-part-regex findAllInString:pattern))
+            (if (tokens count)
+                (set keys (tokens map:(do (token) (token groupAtIndex:1))))
+                (set newpattern (+ "" (dynamic-part-regex replaceWithString:-"/([^/]*)" inString:pattern) ""))
+                (set pattern (regex newpattern))))
+        
         (set handler ((self alloc) init))
         (handler setAction:action)
         (handler setPattern:pattern)
-        (if (send statements isKindOfClass:NuBlock)
-            (then (handler setStatements:statements))
-            (else (handler setStatements:(cons 'progn statements))))
+        (handler setKeys:keys)
+        (handler setBlock:block)
         handler)
      
      ;; Try to match the handler against a specified action and path. Used internally.
-     (- (id)matchAction:(id)action path:(id)path is
-        (set splitpath (path componentsSeparatedByString:"?"))
-        (if (or (eq @action action)
-                (and (eq action "HEAD") (eq @action "GET")))
-            (then (cond ((@pattern isKindOfClass:NSString)
-                         (set @match (eq @pattern path))
-                         (unless @match
-                            (if (> (splitpath count) 1)
-                                (set @match (eq (splitpath 0) @pattern))
-                                (if @match 
-                                    (set $parameters ((splitpath 1) urlQueryDictionary)))))
-                         @match)
-                        ((@pattern isKindOfClass:NuRegex)
-                         (set @match (@pattern findInString:path))
-                         (eq path (@match group)))
-                        (else nil)))
+     (- (id)matchRequest:(id)request  is
+        (if (or (eq (request command) @action)
+                (and (eq (request command) "HEAD") (eq @action "GET")))
+            (then
+                 (set path (request path))
+                 (cond ;; match against a string
+                       ((@pattern isKindOfClass:NSString)
+                        (eq @pattern path))
+                       ;; match against a regular expression
+                       ((@pattern isKindOfClass:NuRegex)
+                        (set match (@pattern findInString:path))
+                        (if match
+                            (then
+                                 (request setMatch:match)
+                                 (if (and @keys (eq (+ (@keys count) 1) (match count)))
+                                     (set bindings (dict))
+                                     ((@keys count) times:
+                                      (do (i)
+                                          (bindings setValue:(match groupAtIndex:(+ i 1))
+                                               forKey:(@keys objectAtIndex:i))))
+                                     (request setBindings:bindings))
+                                 YES)
+                            (else nil)))
+                       ;; unsupported pattern type, no match
+                       (else nil)))
+            ;; unsupported action, no match
             (else nil)))
      
      (set text-html-pattern (regex "^text/html.*$"))
@@ -166,45 +186,23 @@
         (if (Nunja verbose)
             (NSLog "handling request #{(request uri)}")
             (NSLog "request from host #{(request remoteHost)} port #{(request remotePort)}"))
-        (set response (dict))
-        (set HEAD nil)
-        (set TITLE nil)
         
-        (if (send @statements isKindOfClass:NuCell)
-            (then (set BODY (eval @statements)))          ;; deprecated, evaluates statements in the instance method context
-            (else (set BODY (@statements @match request response)))) ;; new style, evaluates a function with a lexical closure
-        
-        (unless BODY (return)) ;; return early and leave connection open, this expects the handler to have created a closure
-        
-        (cond ;; return data objects as-is
-              ((BODY isKindOfClass:NSData)
-               (request respondWithData:BODY))
-              ;; return non-strings as their stringValues
-              ((not (BODY isKindOfClass:NSString))
-               (request respondWithString:(BODY stringValue)))
-              ;; if a content type is set and it isn't text/html, return string as-is
-              ((and (set content-type (request valueForResponseHeader:"Content-Type"))
-                    (not (text-html-pattern findInString:content-type)))
-               (request respondWithString:BODY))
-              (else
-(if (Nunja autotags)
-    (then
-                   ;; return the string wrapped in html tags
-                   (set html "<html>\n<head>\n")
-                   (if (response "HEAD")
-                       (then (html appendString:(response "HEAD")))
-                       (else (if HEAD (html appendString:HEAD))))
-                   (if (response "TITLE")
-                       (then (html appendString:(+ "\n<title>" (response "TITLE") "</title>")))
-                       (else (if TITLE (html appendString:(+ "\n<title>" TITLE "</title>")))))
-                   (set bodyAttributes (response "BODY_ATTRIBUTES"))
-                   (html appendString:"</head>\n")
-                   (if bodyAttributes
-                       (then (html appendString:"<body #{bodyAttributes}>\n"))
-                       (else (html appendString:"<body>\n")))
-                   (html appendString:BODY)
-                   (html appendString:"\n</body>\n</html>\n"))
-   (else (set html BODY)))
+        (set body (@block request))
+        (cond
+             ;; return without responding, this expects the handler to have created a closure that will finish handling the connection
+             ((not body) nil)
+             ;; return data objects as-is
+             ((body isKindOfClass:NSData) ;; we should set the content type if it isn't set
+              (request respondWithData:body))
+             ;; return other non-strings as their stringValues
+             ((not (body isKindOfClass:NSString))
+              (request respondWithString:(body stringValue)))
+             ;; if a content type is set and it isn't text/html, return string as-is
+             ((and (set content-type (request valueForResponseHeader:"Content-Type"))
+                   (not (text-html-pattern findInString:content-type)))
+              (request respondWithString:body))
+             ;; return string as html
+             (else (set html body)
                    (request respondWithString:html))))
      
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
@@ -218,77 +216,64 @@
         (request setValue:location forResponseHeader:"Location")
         (request respondWithCode:303 message:"redirecting" string:"redirecting")))
 
-;; @class NunjaDelegate
-;; @discussion The Nunja's delegate. Responsible for handling requests.
-(class NunjaDelegate is NSObject
+;; @class NunjaController
+;; @discussion The Nunja Controller. Responsible for handling requests.
+(class NunjaController is NSObject
      (ivar (id) handlers (id) root)
      (ivar-accessors)
+
+     (set privateSharedController nil) ;; private shared variable
      
+     (+ (id) sharedController is
+	privateSharedController)
+
      (- (id) initWithSite:(id) site is
         (self init)
         (set @handlers (array))
-        (set $nunjaDelegate self)
+        (set privateSharedController self)
         (set @root site)
         (load (+ site "/site.nu"))
         self)
      
      (- (void) handleRequest:(id) request is
-        (set path (request uri))
-        (set command (request command))
+        (set path (request path))
         (if (Nunja verbose)
-            (NSLog (+ "REQUEST " command " " path "-----"))
+            (NSLog (+ "REQUEST " (request command) " " path "-----"))
             (NSLog ((request requestHeaders) description)))
         (request setValue:"Nunja" forResponseHeader:"Server")
         
-(set $parameters (dict))
-        (set matches (@handlers select:(do (handler) (handler matchAction:command path:path))))
+        (set matches (@handlers select:(do (handler) (handler matchRequest:request)))) ;; matchAction:command path:path))))
         (if (matches count)
-            (then 
-                (request setParameters:$parameters)
-                ((matches 0) handleRequest:request))
+            (then ((matches 0) handleRequest:request))
             (else ;; look for a file that matches the path
                   (set filename (+ @root "/public" path))
-(NSLog filename)
+                  (NSLog filename)
                   (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
                       (then
                            (set data (NSData dataWithContentsOfFile:filename))
                            (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
-                           (request setValue:"max-age=3600, must-revalidate" forResponseHeader:"Cache-Control")
+                           (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
                            (request respondWithData:data))
                       (else
                            (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
-                           (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{command} #{path}")))))))
-
-(global nunja-site-prefix nil) ;; default
+                           (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}")))))))
 
 ;; Declare a get action.
-(global get
-        (macro-0 _
-             (if $do-it-the-old-way
-                 (then
-                      (set __pattern    (eval (car margs)))
-                      (set __statements (cdr margs))
-                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__statements)))
-                 (else
-                      (set __pattern    (eval (car margs)))
-                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE) (nunja-site-prefix)) (cdr margs))))
-                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"GET" pattern:__pattern statements:__function))))))
+(macro-1 get (pattern *body)
+     `(((NunjaController sharedController) handlers)
+       << (NunjaRequestHandler handlerWithAction:"GET"
+               pattern:,pattern
+               block:(do (REQUEST) ,@*body))))
 
 ;; Declare a post action.
-(global post
-        (macro-0 _
-             (if $do-it-the-old-way
-                 (then
-                      (set __pattern    (eval (car margs)))
-                      (set __statements (cdr margs))
-                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__statements)))
-                 (else
-                      (set __pattern    (eval (car margs)))
-                      (set __function (eval (append '(do (MATCH REQUEST RESPONSE) (nunja-site-prefix)) (cdr margs))))
-                      (($nunjaDelegate handlers) << (NunjaRequestHandler handlerWithAction:"POST" pattern:__pattern statements:__function))))))
+(macro-1 post (pattern *body)
+     `(((NunjaController sharedController) handlers)
+       << (NunjaRequestHandler handlerWithAction:"POST"
+               pattern:,pattern
+               block:(do (REQUEST) ,@*body))))
 
 ;; Set the top-level directory for a site
-(global root
-        (macro-0 _
-             ($nunjaDelegate setRoot:(eval (car margs)))))
+(macro-1 root (top-level-directory)
+     `((NunjaController sharedController) setRoot:,top-level-directory))
+
 

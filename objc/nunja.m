@@ -53,6 +53,13 @@ static BOOL autotags = YES;
 {
     Nunja *nunja;
     struct evhttp_request *req;
+
+    NSString *_uri;
+    NSString *_path;
+    NSDictionary *_parameters;
+    NSDictionary *_query;
+    id _match;
+    NSDictionary *_bindings;
 }
 
 @end
@@ -64,14 +71,94 @@ static BOOL autotags = YES;
     [super init];
     nunja = n;
     req = r;
+    // get the URI
+    _uri = [[NSString alloc] initWithCString:evhttp_request_uri(req) encoding:NSUTF8StringEncoding];
+    // scan for the path
+    int max = [_uri length];
+    int base = 0;
+    int i = 0;
+    unichar c;
+    while ((i < max) && ((c = [_uri characterAtIndex:i])) && (c != ';') && (c != '?'))
+        i++;
+    _path = [[_uri substringToIndex:i] retain];
+    // if necessary, scan the object parameters
+    _parameters = nil;
+    if (c == ';') {
+        i = i + 1;
+        base = i;
+        while ((i < max) && ((c = [_uri characterAtIndex:i])) && (c != '?'))
+            i++;
+        NSString *parameterString = [_uri substringWithRange:NSMakeRange(base, i-base)];
+        _parameters = [[parameterString urlQueryDictionary] retain];
+    }
+    // if necessary, scan the query string
+    _query = nil;
+    if (c == '?') {
+        i = i + 1;
+        base = i;
+        while ((i < max) && ((c = [_uri characterAtIndex:i])))
+            i++;
+        NSString *queryString = [_uri substringWithRange:NSMakeRange(base, i-base)];
+        _query = [[queryString urlQueryDictionary] retain];
+    }
     return self;
+}
+
+- (void) dealloc
+{
+    [_uri release];
+    [_path release];
+    [_parameters release];
+    [_query release];
+    [_match release];
+    [_bindings release];
+    [super dealloc];
 }
 
 - (Nunja *) nunja {return nunja;}
 
 - (NSString *) uri
 {
-    return [NSString stringWithCString:evhttp_request_uri(req) encoding:NSUTF8StringEncoding];
+    return _uri;
+}
+
+- (NSString *) path
+{
+    return _path;
+}
+
+- (NSDictionary *) parameters
+{
+    return _parameters;
+}
+
+- (NSDictionary *) query
+{
+    return _query;
+}
+
+- (id) match
+{
+    return _match;
+}
+
+- (void) setMatch:(id) match
+{
+    [match retain];
+    [_match release];
+    _match = match;
+}
+
+- (id) bindings
+{
+    return _bindings;
+}
+
+- (void) setBindings:(id) bindings
+{
+    [bindings retain];
+    [_bindings release];
+    _bindings = bindings;
 }
 
 - (NSData *) body
@@ -102,7 +189,8 @@ static BOOL autotags = YES;
     return [NSString stringWithCString:req->remote_host encoding:NSUTF8StringEncoding];
 }
 
-- (int) remotePort {
+- (int) remotePort
+{
     return req->remote_port;
 }
 
@@ -193,7 +281,7 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 
 @end
 
-@protocol NunjaDelegate
+@protocol NunjaController
 - (void) handleRequest:(NunjaRequest *)request;
 @end
 
@@ -201,10 +289,10 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 {
     struct event_base *event_base;
     struct evhttp *httpd;
-    id<NSObject,NunjaDelegate> delegate;
+    id<NSObject,NunjaController> controller;
 }
 
-- (id) delegate;
+- (id) controller;
 @end
 
 @implementation Nunja
@@ -223,13 +311,6 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 
 + (BOOL) localOnly {return local_nunja;}
 
-+ (void) setAutotags:(BOOL) a
-{
-    autotags = a;
-}
-
-+ (BOOL) autotags {return autotags;}
-
 + (void) load
 {
     NunjaInit();
@@ -238,13 +319,13 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointer)
 {
     Nunja *nunja = (Nunja *) nunja_pointer;
-    id delegate = [nunja delegate];
-    if (delegate) {
-        [delegate handleRequest:[[[NunjaRequest alloc] initWithNunja:nunja request:req] autorelease]];
+    id controller = [nunja controller];
+    if (controller) {
+        [controller handleRequest:[[[NunjaRequest alloc] initWithNunja:nunja request:req] autorelease]];
     }
     else {
         nunja_response_helper(req, HTTP_OK, @"OK",
-            [[NSString stringWithFormat:@"Please set the Nunja server delegate.<br/>If you are running nunjad, use the '-s' option to specify a site.<br/>\nRequest: %s\n",
+            [[NSString stringWithFormat:@"Please set the Nunja server controller.<br/>If you are running nunjad, use the '-s' option to specify a site.<br/>\nRequest: %s\n",
             evhttp_request_uri(req)]
             dataUsingEncoding:NSUTF8StringEncoding]);
     }
@@ -257,7 +338,7 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     evdns_init();
     httpd = evhttp_new(event_base);
     evhttp_set_gencb(httpd, nunja_request_handler, self);
-    delegate = nil;
+    controller = nil;
     return self;
 }
 
@@ -277,16 +358,16 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     [super dealloc];
 }
 
-- (id) delegate
+- (id) controller
 {
-    return delegate;
+    return controller;
 }
 
-- (void) setDelegate:(id) d
+- (void) setController:(id) d
 {
     [d retain];
-    [delegate release];
-    delegate = d;
+    [controller release];
+    controller = d;
 }
 
 @class NuBlock;
@@ -350,7 +431,6 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
         if (req->response_code == HTTP_SEEOTHER) {
             fprintf(stdout, "REDIRECTING\n");
             NSDictionary *headers = nunja_request_headers_helper(req);
-            NSLog(@"%@", [headers description]);
             return;                               // this is not handled yet.
         }
         fprintf(stdout, "FAILED to get OK (response = %d)\n", req->response_code);

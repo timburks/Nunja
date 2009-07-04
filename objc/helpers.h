@@ -37,4 +37,10 @@ limitations under the License.
 - (NSDictionary *) urlQueryDictionary;
 /*! Get a dictionary corresponding to a multipart-encoded message body. */
 - (NSDictionary *) multipartDictionaryWithBoundary:(NSString *) boundary;
+/*! Create a data object of a specified size. */
++ (NSData *) dataWithSize:(int) size;
+/*! Get a hex representation of a data object. */
+- (NSString*) hex;
+/*! Get an md5 hash of a data object. */
+- (NSData *) md5;
 @end

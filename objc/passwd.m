@@ -1,8 +1,5 @@
 #import "nunja.h"
 
-
-
-
 char *md5_crypt(const char *pw, const char *salt);
 
 @implementation SuperNunja (SaltedPasswords)

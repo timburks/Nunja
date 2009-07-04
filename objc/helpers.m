@@ -45,7 +45,7 @@ static unichar char_to_int(unichar c)
 
 static char int_to_char[] = "0123456789ABCDEF";
 
-@implementation NSString(NuHTTP)
+@implementation NSString(Nunja)
 
 - (NSString *) urlEncode
 {
@@ -116,7 +116,7 @@ static char int_to_char[] = "0123456789ABCDEF";
 
 @end
 
-@implementation NSDictionary (NuHTTP)
+@implementation NSDictionary (Nunja)
 - (NSString *) urlQueryString
 {
     NSMutableString *result = [NSMutableString string];

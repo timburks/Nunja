@@ -18,8 +18,23 @@
 (set sessionCookies (dict))
 (set friends (array))
 
+(set page-layout (NuTemplate codeForString:<<-TEMPLATE
+<html>
+<head>
+<%= (if (RESPONSE "HEAD") (then (RESPONSE "HEAD")) (else "")) %>
+<% (if (RESPONSE "TITLE") (then %>
+<title><%= (RESPONSE "TITLE") %></title>
+<% )) %>
+</head>
+<body>
+<%= (RESPONSE "BODY") %>
+</body>
+</html>
+TEMPLATE))
+
 ;; front page.
 (get "/"
+     (set RESPONSE (dict))
      (set sessionCookieName ((REQUEST cookies) "session"))
      (set sessionCookie (if sessionCookieName (then (sessionCookies sessionCookieName)) (else nil)))
      (set user (sessionCookie user))
@@ -48,22 +63,26 @@
 </form>
 <% )) %>
 TEMPLATE)
-     (eval (NuTemplate codeForString:template)))
+     (RESPONSE setValue:(eval (NuTemplate codeForString:template)) forKey:"BODY")
+     (eval page-layout))
 
 ;; login page.
 (get "/login"
+     (set RESPONSE (dict))
      (RESPONSE setValue:"Log in" forKey:"TITLE")
-     <<-HTML
+     (RESPONSE setValue:(eval (NuTemplate codeForString:<<-HTML
 <form action="/login" method="post">
 <p>Please sign in.</p>
 <label for="username">username: </label> <input type="text" name="username"/><br/>
 <label for="password">password: </label> <input type="password" name="password"/><br/>
 <input type="submit" value="Submit" />
 </form>	
-HTML)
+HTML)) forKey:"BODY")
+     (eval page-layout))
 
 ;; login POST handler.
 (post "/login"
+      (set RESPONSE (dict))
       (set post (REQUEST post))
       (if (eq (post "response") "Cancel")
           (then
@@ -79,7 +98,7 @@ HTML)
                         (Nunja redirectResponse:REQUEST toLocation:"/"))
                    (else
                         (RESPONSE setValue:"Please try again" forKey:"TITLE")
-                        <<-HTML
+                        (RESPONSE setValue:(eval (NuTemplate codeForString:<<-HTML
 <p>Invalid Password.  Your password is your username.</p>
 <form action="/login" method="post">
 <label for="username">username: </label> <input type="text" name="username"/><br/>
@@ -87,7 +106,8 @@ HTML)
 <input type="submit" name="response" value="Submit" />
 <input type="submit" name="response" value="Cancel" />
 </form>	
-			HTML)))))
+HTML)) forKey:"BODY")
+                        (eval page-layout))))))
 
 ;; logout, also with a GET. In the real world, we would prefer a POST.
 (get "/logout"
@@ -97,18 +117,20 @@ HTML)
 
 ;; add-a-friend page.
 (get "/addfriend"
+     (set RESPONSE (dict))
      (RESPONSE setValue:"Add a friend" forKey:"TITLE")
-     <<-HTML
+     (RESPONSE setValue:(eval (NuTemplate codeForString:<<-HTML
 <h1>Add a friend</h1>
 <form action="/addfriend" method="post">
 <p>
 <label for="name">name: </label><input type="text" name="name"/><br/>
-<label for="email">email: </labellabel><input type="text" name="email"/><br/>
+<label for="email">email: </label><input type="text" name="email"/><br/>
 <input type="submit" name="response" value="Submit" />         
 <input type="submit" name="response" value="Cancel"/>
 </p>
 </form>
-HTML)
+HTML)) forKey:"BODY")
+     (eval page-layout))
 
 ;; add-a-friend POST handler.
 (post "/addfriend"
@@ -118,15 +140,32 @@ HTML)
       (Nunja redirectResponse:REQUEST toLocation:"/"))
 
 ;; delete-a-friend with a GET. Strictly, this should be a post, but we use a get to show how it would be done.
-(get (regex -"^/delete\?(.*)$")
-     (set post ((MATCH groupAtIndex:1) urlQueryDictionary))
+(get "/delete"
+     (set post (REQUEST query))
      (set friends (friends select:(do (friend) (!= (friend "name") (post "name")))))
      (Nunja redirectResponse:REQUEST toLocation:"/"))
 
-(get "/about" <<-END
+(get "/repeat/:me"
+     (set RESPONSE (dict))
+     (RESPONSE setValue:(+ "<pre>" ((REQUEST bindings) description) "</pre>") forKey:"BODY")
+     (eval page-layout))
+
+(get "/repeat/:after/:me"
+     (set RESPONSE (dict))
+     (RESPONSE setValue:(+ "<pre>" ((REQUEST bindings) description) "</pre>") forKey:"BODY")
+     (eval page-layout))
+
+;; for the ultimate flexibility
+(get (regex -"^/foo/([^/]+)$")
+     ((REQUEST match) groupAtIndex:1))
+
+(get "/about"
+     (set RESPONSE (dict))
+     (RESPONSE setValue:<<-END
 <h1>About this site</h1>
 <p>It is running on Nunja!</p>
-END)
+END forKey:"BODY")
+     (eval page-layout))
 
 (get "/recycle.ico"
      (REQUEST setValue:"application/icon" forResponseHeader:"Content-Type")
@@ -134,6 +173,7 @@ END)
 
 ;; image uploads
 (post "/postimage"
+      (set RESPONSE (dict))
       (puts (REQUEST description))
       (set postBody (REQUEST body))
       (puts ((REQUEST requestHeaders) description))
@@ -143,12 +183,13 @@ END)
       (set image (postDictionary objectForKey:"image"))
       (set data (image objectForKey:"data"))
       (data writeToFile:"image.png" atomically:NO)
-      "thanks for uploading!")
+      (RESPONSE setValue:"Thanks for uploading!" forKey:"BODY")
+      (eval page-layout))
 
 ;; large file download
 (get (regex -"/data(.*)")
      (REQUEST setValue:"application/octet-stream" forResponseHeader:"Content-Type")
-     (set size (MATCH groupAtIndex:1))
+     (set size ((REQUEST match) groupAtIndex:1))
      (set megabytes (if (eq size "")
                         then 1
                         else (size doubleValue)))
@@ -157,7 +198,7 @@ END)
 ;; perform a dns lookup
 ;; ex: /dns/programming.nu
 (get (regex -"/dns/(.*)")
-     (set hostname (MATCH groupAtIndex:1))
+     (set hostname ((REQUEST match) groupAtIndex:1))
      ((REQUEST nunja) resolveDomainName:hostname andDo:
       (do (address)
           (if address
@@ -169,8 +210,8 @@ END)
 ;; request and return a resource from a specified host
 ;; ex: /proxy/programming.nu/about
 (get (regex -"/proxy/([^\/]+)/(.*)")
-     (set host (MATCH groupAtIndex:1))
-     (set path (+ "/" (MATCH groupAtIndex:2)))
+     (set host ((REQUEST match) groupAtIndex:1))
+     (set path (+ "/" ((REQUEST match) groupAtIndex:2)))
      ((REQUEST nunja) resolveDomainName:host andDo:
       (do (address)
           (if address
