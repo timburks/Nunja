@@ -53,6 +53,7 @@ static BOOL autotags = YES;
 {
     Nunja *nunja;
     struct evhttp_request *req;
+    id cookies;
 }
 
 @end

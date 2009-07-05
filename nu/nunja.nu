@@ -88,8 +88,6 @@
 ;; @class NunjaRequest
 ;; @discussion A class for managing requests received by the server.
 (class NunjaRequest
-     (ivar (id) cookies)
-     
      (- (id) cookies is
         (unless @cookies
                 (set @cookies
