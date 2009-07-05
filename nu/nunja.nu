@@ -88,12 +88,11 @@
 ;; @class NunjaRequest
 ;; @discussion A class for managing requests received by the server.
 (class NunjaRequest
-     (ivar (id) cookies)
      (ivar-accessors)
      
      (- (id) cookies is
-        (unless @cookies
-                (set @cookies
+        (unless @_cookies
+                (set @_cookies
                      (if (set cookies ((self requestHeaders) objectForKey:"Cookie"))
                          (then (set cookieDictionary (dict))
                                ((cookies componentsSeparatedByString:";") each:
@@ -103,7 +102,7 @@
                                              forKey:(match groupAtIndex:1)))))
                                cookieDictionary)
                          (else (dict)))))
-        @cookies)
+        @_cookies)
      
      (- (id) post is
         (if (Nunja verbose)

@@ -53,13 +53,13 @@ static BOOL autotags = YES;
 {
     Nunja *nunja;
     struct evhttp_request *req;
-
     NSString *_uri;
     NSString *_path;
     NSDictionary *_parameters;
     NSDictionary *_query;
     id _match;
     NSDictionary *_bindings;
+    id _cookies;
 }
 
 @end
@@ -112,6 +112,7 @@ static BOOL autotags = YES;
     [_query release];
     [_match release];
     [_bindings release];
+    [_cookies release];
     [super dealloc];
 }
 
