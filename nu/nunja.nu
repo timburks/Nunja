@@ -192,21 +192,25 @@
         
         (set body (@block request))
         (cond
-             ;; return without responding, this expects the handler to have created a closure that will finish handling the connection
+             ;; return without responding, this means the handler has rejected the URL
              ((not body) nil)
              ;; return data objects as-is
              ((body isKindOfClass:NSData) ;; we should set the content type if it isn't set
-              (request respondWithData:body))
+              (request respondWithData:body) 
+              t)
              ;; return other non-strings as their stringValues
              ((not (body isKindOfClass:NSString))
-              (request respondWithString:(body stringValue)))
+              (request respondWithString:(body stringValue))
+              t)
              ;; if a content type is set and it isn't text/html, return string as-is
              ((and (set content-type (request valueForResponseHeader:"Content-Type"))
                    (not (text-html-pattern findInString:content-type)))
-              (request respondWithString:body))
+              (request respondWithString:body)
+              t)
              ;; return string as html
              (else (set html body)
-                   (request respondWithString:html))))
+                   (request respondWithString:html)
+                   t)))
      
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
      (- (id)redirectResponse:(id)request toLocation:(id)location is
@@ -245,21 +249,24 @@
             (NSLog ((request requestHeaders) description)))
         (request setValue:"Nunja" forResponseHeader:"Server")
         
-        (set matches (@handlers select:(do (handler) (handler matchRequest:request)))) ;; matchAction:command path:path))))
-        (if (matches count)
-            (then ((matches 0) handleRequest:request))
-            (else ;; look for a file that matches the path
-                  (set filename (+ @root "/public" path))
-                  (NSLog filename)
-                  (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
-                      (then
-                           (set data (NSData dataWithContentsOfFile:filename))
-                           (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
-                           (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
-                           (request respondWithData:data))
-                      (else
-                           (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
-                           (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}")))))))
+        (set matches (@handlers select:(do (handler) (handler matchRequest:request))))
+        (set handled nil)
+        (matches each:
+           (do (match)
+	      (set handled (match handleRequest:request))
+              (if handled (break))))
+        (unless handled ;; look for a file that matches the path
+                (set filename (+ @root "/public" path))
+                (NSLog filename)
+                (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
+                    (then
+                          (set data (NSData dataWithContentsOfFile:filename))
+                          (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
+                          (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
+                          (request respondWithData:data))
+                    (else
+                          (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
+                          (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}"))))))
 
 ;; Declare a get action.
 (macro-1 get (pattern *body)
