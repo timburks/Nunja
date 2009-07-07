@@ -113,7 +113,11 @@
             (NSLog (d description)))
         d)
 
-     (- (void) setContentType:(id)t is (self setValue:t forResponseHeader:"Content-Type")))
+     (- (void) setContentType:(id)t is (self setValue:t forResponseHeader:"Content-Type"))
+
+     (- (void) redirectToLocation:(id) location is
+        (self setValue:location forResponseHeader:"Location")
+        (self respondWithCode:303 message:"redirecting" string:"redirecting")))
 
 ;; An HTTP request handler. Handlers consist of an action, a pattern, and a block.
 ;; The action is an HTTP verb such as "get" or "post", the pattern is either an NSString
@@ -139,7 +143,7 @@
             (set tokens (dynamic-part-regex findAllInString:pattern))
             (if (tokens count)
                 (set keys (tokens map:(do (token) (token groupAtIndex:1))))
-                (set newpattern (+ "" (dynamic-part-regex replaceWithString:-"/([^/]*)" inString:pattern) ""))
+                (set newpattern (+ "^" (dynamic-part-regex replaceWithString:-"/([^/]*)" inString:pattern) "$"))
                 (set pattern (regex newpattern))))
         
         (set handler ((self alloc) init))
