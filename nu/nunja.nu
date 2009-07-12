@@ -209,6 +209,7 @@
               t)
              ;; return string as html
              (else (set html body)
+                   (request setContentType:"text/html; charset=UTF-8")
                    (request respondWithString:html)
                    t)))
      

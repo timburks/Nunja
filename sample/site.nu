@@ -183,7 +183,20 @@ END forKey:"BODY")
       (set image (postDictionary objectForKey:"image"))
       (set data (image objectForKey:"data"))
       (data writeToFile:"image.png" atomically:NO)
-      (RESPONSE setValue:"Thanks for uploading!" forKey:"BODY")
+      (RESPONSE setValue:(+ "Thanks for uploading!<br/><pre>" (postDictionary description) "</pre>") forKey:"BODY")
+      (eval page-layout))
+
+;; multipart form upload
+;; curl -F "file1=@README" -F "file2=@LICENSE" http://localhost:3000/multipart
+(post "/multipart"
+      (set RESPONSE (dict))
+      (puts (REQUEST description))
+      (set postBody (REQUEST body))
+      (puts ((REQUEST requestHeaders) description))
+      (set contentType ((REQUEST requestHeaders) "Content-Type"))
+      (set boundary ((contentType componentsSeparatedByString:"=") lastObject))
+      (set postDictionary (postBody multipartDictionaryWithBoundary:boundary))
+      (RESPONSE setValue:(+ "Thanks for uploading!<br/><pre>" (postDictionary description) "</pre>") forKey:"BODY")
       (eval page-layout))
 
 ;; large file download
