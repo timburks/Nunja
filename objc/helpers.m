@@ -218,27 +218,38 @@ static NSMutableDictionary *parseHeaders(const char *headers)
                     while ((bytes[cursor2] != (char) 0x0d) ||
                         (bytes[cursor2+1] != (char) 0x0a) ||
                         (bytes[cursor2+2] != (char) 0x0d) ||
-                        (bytes[cursor2+3] != (char) 0x0a)) cursor2++;
-                    int lengthOfHeaders = cursor2 - startOfHeaders;
-                    char *headers = (char *) malloc((lengthOfHeaders + 1) * sizeof(char));
-                    strncpy(headers, bytes+startOfHeaders, lengthOfHeaders);
-                    headers[lengthOfHeaders] = 0;
-
-                    // Process headers.
-                    NSMutableDictionary *item = parseHeaders(headers);
-
-                    int startOfData = cursor2 + 4;// skip CR/LF pair
-                                                  // skip CR/LF and final two hyphens
-                    int lengthOfData = cursor - startOfData - 4;
-
-                    if (([item valueForKey:@"Content-Type"] == nil) && ([item valueForKey:@"filename"] == nil)) {
-                        NSString *string = [[[NSString alloc] initWithBytes:(bytes+startOfData) length:lengthOfData encoding:NSUTF8StringEncoding] autorelease];
-                        [dict setObject:string forKey:[item valueForKey:@"name"]];
+                        (bytes[cursor2+3] != (char) 0x0a)) {
+                        cursor2++;
+                        if (cursor2 + 4 == max) {
+			   // something is wrong.
+                           break;
+                        }
                     }
-                    else {
-                        NSData *data = [NSData dataWithBytes:(bytes+startOfData) length:lengthOfData];
-                        [item setObject:data forKey:@"data"];
-                        [dict setObject:item forKey:[item valueForKey:@"name"]];
+	            if (cursor2 + 4 == max) {
+		       // it's over
+		       break; 
+                    } else {
+                        int lengthOfHeaders = cursor2 - startOfHeaders;
+                        char *headers = (char *) malloc((lengthOfHeaders + 1) * sizeof(char));
+                        strncpy(headers, bytes+startOfHeaders, lengthOfHeaders);
+                        headers[lengthOfHeaders] = 0;
+    
+                        // Process headers.
+                        NSMutableDictionary *item = parseHeaders(headers);
+    
+                        int startOfData = cursor2 + 4;// skip CR/LF pair
+                                                      // skip CR/LF and final two hyphens
+                        int lengthOfData = cursor - startOfData - 4;
+    
+                        if (([item valueForKey:@"Content-Type"] == nil) && ([item valueForKey:@"filename"] == nil)) {
+                            NSString *string = [[[NSString alloc] initWithBytes:(bytes+startOfData) length:lengthOfData encoding:NSUTF8StringEncoding] autorelease];
+                            [dict setObject:string forKey:[item valueForKey:@"name"]];
+                        }
+                        else {
+                            NSData *data = [NSData dataWithBytes:(bytes+startOfData) length:lengthOfData];
+                            [item setObject:data forKey:@"data"];
+                            [dict setObject:item forKey:[item valueForKey:@"name"]];
+                        }
                     }
                 }
                 cursor = cursor + patternLength - 1;

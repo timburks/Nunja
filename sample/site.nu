@@ -180,10 +180,11 @@ END forKey:"BODY")
       (set contentType ((REQUEST requestHeaders) "Content-Type"))
       (set boundary ((contentType componentsSeparatedByString:"=") lastObject))
       (set postDictionary (postBody multipartDictionaryWithBoundary:boundary))
+      (puts ((postDictionary allKeys) description))
       (set image (postDictionary objectForKey:"image"))
       (set data (image objectForKey:"data"))
       (data writeToFile:"image.png" atomically:NO)
-      (RESPONSE setValue:(+ "Thanks for uploading!<br/><pre>" (postDictionary description) "</pre>") forKey:"BODY")
+      (RESPONSE setValue:(+ "Thanks for uploading!<br/><pre>" ((postDictionary allKeys) description) "</pre>") forKey:"BODY")
       (eval page-layout))
 
 ;; multipart form upload
