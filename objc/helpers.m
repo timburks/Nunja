@@ -20,6 +20,12 @@ limitations under the License.
 #import <arpa/inet.h>
 #import <openssl/md5.h>
 
+#import <openssl/sha.h>
+#import <openssl/hmac.h>
+#import <openssl/evp.h>
+#import <openssl/bio.h>
+#import <openssl/buffer.h>
+
 static unichar char_to_int(unichar c)
 {
     switch (c) {
@@ -296,5 +302,37 @@ static const char *const digits = "0123456789abcdef";
    unsigned char *digest = MD5([self bytes], [self length], NULL);
    return [NSData dataWithBytes:digest length:16];
 }
+
+- (NSData *) hmac_sha1:(NSData *) key {
+   char hash[1024];
+   int hashlen;
+   unsigned char *digest = HMAC(EVP_sha1(), [key bytes], [key length], [self bytes], [self length], hash, &hashlen);
+   return [NSData dataWithBytes:hash length:hashlen];
+}
+
+
+- (NSString *) base64 
+{
+  const char *input = [self bytes];
+  int length = [self length];
+  BIO *bmem, *b64;
+  BUF_MEM *bptr;
+
+  b64 = BIO_new(BIO_f_base64());
+  bmem = BIO_new(BIO_s_mem());
+  b64 = BIO_push(b64, bmem);
+  BIO_write(b64, input, length);
+  BIO_flush(b64);
+  BIO_get_mem_ptr(b64, &bptr);
+
+  char *buff = (char *)malloc(bptr->length);
+  memcpy(buff, bptr->data, bptr->length-1);
+  buff[bptr->length-1] = 0;
+
+  BIO_free_all(b64);
+
+  return [NSString stringWithCString:buff encoding:NSUTF8StringEncoding];
+}
+
 
 @end

@@ -106,11 +106,11 @@
      
      (- (id) post is
         (if (Nunja verbose)
-            (NSLog "body is")
-            (NSLog ((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding)))
+            (puts "body is")
+            (puts ((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding)))
         (set d (((NSString alloc) initWithData:(self body) encoding:NSUTF8StringEncoding) urlQueryDictionary))
         (if (Nunja verbose)
-            (NSLog (d description)))
+            (puts (d description)))
         d)
 
      (- (void) setContentType:(id)t is (self setValue:t forResponseHeader:"Content-Type"))
@@ -131,8 +131,8 @@
      (ivar-accessors)
      
      (- (void) setValue:(id) value forKey:(id) key is
-        (NSLog "this should not get called")
-        (NSLog "#{key}: #{value}"))
+        (puts "this should not get called")
+        (puts "#{key}: #{value}"))
      
      ;; Create a handler with a specified action, pattern, and block. Used internally.
      (+ (id) handlerWithAction:(id)action pattern:(id)pattern block:(id)block is
@@ -187,8 +187,8 @@
      ;; Handle a request. Used internally.
      (- (id)handleRequest:(id)request is
         (if (Nunja verbose)
-            (NSLog "handling request #{(request uri)}")
-            (NSLog "request from host #{(request remoteHost)} port #{(request remotePort)}"))
+            (puts "handling request #{(request uri)}")
+            (puts "request from host #{(request remoteHost)} port #{(request remotePort)}"))
         
         (set body (@block request))
         (cond
@@ -246,8 +246,8 @@
      (- (void) handleRequest:(id) request is
         (set path (request path))
         (if (Nunja verbose)
-            (NSLog (+ "REQUEST " (request command) " " path "-----"))
-            (NSLog ((request requestHeaders) description)))
+            (puts (+ "REQUEST " (request command) " " path "-----"))
+            (puts ((request requestHeaders) description)))
         (request setValue:"Nunja" forResponseHeader:"Server")
         
         (set matches (@handlers select:(do (handler) (handler matchRequest:request))))
@@ -258,7 +258,7 @@
               (if handled (break))))
         (unless handled ;; look for a file that matches the path
                 (set filename (+ @root "/public" path))
-                (NSLog filename)
+                (puts filename)
                 (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
                     (then
                           (set data (NSData dataWithContentsOfFile:filename))
