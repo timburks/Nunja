@@ -60,6 +60,7 @@ static BOOL autotags = YES;
     id _match;
     NSDictionary *_bindings;
     id _cookies;
+    int _responded;
 }
 
 @end
@@ -101,6 +102,8 @@ static BOOL autotags = YES;
         NSString *queryString = [_uri substringWithRange:NSMakeRange(base, i-base)];
         _query = [[queryString urlQueryDictionary] retain];
     }
+    // we haven't responded yet
+    _responded = NO;
     return self;
 }
 
@@ -262,22 +265,34 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 
 - (void) respondWithString:(NSString *) string
 {
-    nunja_response_helper(req, HTTP_OK, @"OK", [string dataUsingEncoding:NSUTF8StringEncoding]);
+    if (!_responded) {
+        nunja_response_helper(req, HTTP_OK, @"OK", [string dataUsingEncoding:NSUTF8StringEncoding]);
+        _responded = YES;
+    }
 }
 
 - (void) respondWithData:(NSData *) data
 {
-    nunja_response_helper(req, HTTP_OK, @"OK", data);
+    if (!_responded) {
+        nunja_response_helper(req, HTTP_OK, @"OK", data);
+        _responded = YES;
+    }
 }
 
 - (void) respondWithCode:(int) code message:(NSString *) message string:(NSString *) string
 {
-    nunja_response_helper(req, code, message, [string dataUsingEncoding:NSUTF8StringEncoding]);
+    if (!_responded) {
+        nunja_response_helper(req, code, message, [string dataUsingEncoding:NSUTF8StringEncoding]);
+        _responded = YES;
+    }
 }
 
 - (void) respondWithCode:(int) code message:(NSString *) message data:(NSData *) data
 {
-    nunja_response_helper(req, code, message, data);
+    if (!_responded) {
+        nunja_response_helper(req, code, message, data);
+        _responded = YES;
+    }
 }
 
 @end
@@ -322,7 +337,9 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     Nunja *nunja = (Nunja *) nunja_pointer;
     id controller = [nunja controller];
     if (controller) {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         [controller handleRequest:[[[NunjaRequest alloc] initWithNunja:nunja request:req] autorelease]];
+        [pool release];
     }
     else {
         nunja_response_helper(req, HTTP_OK, @"OK",
