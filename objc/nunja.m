@@ -338,7 +338,9 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     id controller = [nunja controller];
     if (controller) {
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        [controller handleRequest:[[[NunjaRequest alloc] initWithNunja:nunja request:req] autorelease]];
+        NunjaRequest *request = [[NunjaRequest alloc] initWithNunja:nunja request:req];
+        [controller handleRequest:request];
+        [request release];
         [pool release];
     }
     else {

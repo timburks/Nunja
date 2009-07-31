@@ -112,9 +112,9 @@
         (if (Nunja verbose)
             (puts (d description)))
         d)
-
+     
      (- (void) setContentType:(id)t is (self setValue:t forResponseHeader:"Content-Type"))
-
+     
      (- (void) redirectToLocation:(id) location is
         (self setValue:location forResponseHeader:"Location")
         (self respondWithCode:303 message:"redirecting" string:"redirecting")))
@@ -189,29 +189,27 @@
         (if (Nunja verbose)
             (puts "handling request #{(request uri)}")
             (puts "request from host #{(request remoteHost)} port #{(request remotePort)}"))
-        
-        (set body (@block request))
-        (cond
-             ;; return without responding, this means the handler has rejected the URL
-             ((not body) nil)
-             ;; return data objects as-is
-             ((body isKindOfClass:NSData) ;; we should set the content type if it isn't set
-              (request respondWithData:body) 
-              t)
-             ;; return other non-strings as their stringValues
-             ((not (body isKindOfClass:NSString))
-              (request respondWithString:(body stringValue))
-              t)
-             ;; if a content type is set and it isn't text/html, return string as-is
-             ((and (set content-type (request valueForResponseHeader:"Content-Type"))
-                   (not (text-html-pattern findInString:content-type)))
-              (request respondWithString:body)
-              t)
-             ;; return string as html
-             (else (set html body)
-                   (request setContentType:"text/html; charset=UTF-8")
-                   (request respondWithString:html)
-                   t)))
+        (let (body (@block request))
+             (cond
+                  ;; return without responding, this means the handler has rejected the URL
+                  ((not body) nil)
+                  ;; return data objects as-is
+                  ((body isKindOfClass:NSData) ;; we should set the content type if it isn't set
+                   (request respondWithData:body)
+                   t)
+                  ;; return other non-strings as their stringValues
+                  ((not (body isKindOfClass:NSString))
+                   (request respondWithString:(body stringValue))
+                   t)
+                  ;; if a content type is set and it isn't text/html, return string as-is
+                  ((and (set content-type (request valueForResponseHeader:"Content-Type"))
+                        (not (text-html-pattern findInString:content-type)))
+                   (request respondWithString:body)
+                   t)
+                  ;; return string as html
+                  (else (request setContentType:"text/html; charset=UTF-8")
+                        (request respondWithString:body)
+                        t))))
      
      ;; Return a response redirecting the client to a new location.  This method may be called from action handlers.
      (- (id)redirectResponse:(id)request toLocation:(id)location is
@@ -229,12 +227,12 @@
 (class NunjaController is NSObject
      (ivar (id) handlers (id) root)
      (ivar-accessors)
-
+     
      (set privateSharedController nil) ;; private shared variable
      
      (+ (id) sharedController is
-	privateSharedController)
-
+        privateSharedController)
+     
      (- (id) initWithSite:(id) site is
         (self init)
         (set @handlers (array))
@@ -250,24 +248,23 @@
             (puts ((request requestHeaders) description)))
         (request setValue:"Nunja" forResponseHeader:"Server")
         
-        (set matches (@handlers select:(do (handler) (handler matchRequest:request))))
         (set handled nil)
-        (matches each:
-           (do (match)
-	      (set handled (match handleRequest:request))
-              (if handled (break))))
+        (@handlers each:
+             (do (handler)
+                 (if (and (not handled) (handler matchRequest:request))
+                     (set handled (handler handleRequest:request)))))
+        
         (unless handled ;; look for a file that matches the path
                 (set filename (+ @root "/public" path))
-                (puts filename)
                 (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
                     (then
-                          (set data (NSData dataWithContentsOfFile:filename))
-                          (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
-                          (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
-                          (request respondWithData:data))
+                         (set data (NSData dataWithContentsOfFile:filename))
+                         (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
+                         (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
+                         (request respondWithData:data))
                     (else
-                          (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
-                          (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}"))))))
+                         (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
+                         (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}"))))))
 
 ;; Declare a get action.
 (macro-1 get (pattern *body)
