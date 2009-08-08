@@ -336,3 +336,27 @@ static const char *const digits = "0123456789abcdef";
 
 
 @end
+
+@implementation NSString (Base64) 
+
+- (NSData *) dataUsingBase64Encoding 
+{
+  BIO *b64, *bmem;
+
+  int length = [self length];
+  unsigned char *input = [self cStringUsingEncoding:NSASCIIStringEncoding];
+
+  char *buffer = (char *)malloc(length);
+  memset(buffer, 0, length);
+
+  b64 = BIO_new(BIO_f_base64());
+  bmem = BIO_new_mem_buf(input, length);
+  bmem = BIO_push(b64, bmem);
+
+  int outputLength = BIO_read(bmem, buffer, length);
+  BIO_free_all(bmem);
+
+  return [NSData dataWithBytesNoCopy:buffer length:outputLength];
+}
+
+@end
