@@ -47,6 +47,15 @@
                 (self descriptionWithCalendarFormat:"%a, %d %b %Y %H:%M:%S "
                       timeZone:(NSTimeZone timeZoneWithName:"GMT") locale:nil))
         (result appendString:((NSTimeZone timeZoneWithName:"GMT") abbreviation))
+        result)
+
+     ;; Get an RFC3339-compliant representation of a date.
+     (- (id) rfc3339 is
+        (set result ((NSMutableString alloc) init))
+        (result appendString:
+                (self descriptionWithCalendarFormat:"%Y-%m-%dT%H:%M:%S%z"
+                      timeZone:(NSTimeZone localTimeZone) locale:nil))
+        (result insertString:":" atIndex:(- (result length) 2))
         result))
 
 ;; use this pattern to extract a cookie from a header
