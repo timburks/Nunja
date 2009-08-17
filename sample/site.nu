@@ -145,20 +145,6 @@ HTML)) forKey:"BODY")
      (set friends (friends select:(do (friend) (!= (friend "name") (post "name")))))
      (Nunja redirectResponse:REQUEST toLocation:"/"))
 
-(get "/repeat/:me"
-     (set RESPONSE (dict))
-     (RESPONSE setValue:(+ "<pre>" ((REQUEST bindings) description) "</pre>") forKey:"BODY")
-     (eval page-layout))
-
-(get "/repeat/:after/:me"
-     (set RESPONSE (dict))
-     (RESPONSE setValue:(+ "<pre>" ((REQUEST bindings) description) "</pre>") forKey:"BODY")
-     (eval page-layout))
-
-;; for the ultimate flexibility
-(get (regex -"^/foo/([^/]+)$")
-     ((REQUEST match) groupAtIndex:1))
-
 (get "/about"
      (set RESPONSE (dict))
      (RESPONSE setValue:<<-END
@@ -167,9 +153,6 @@ HTML)) forKey:"BODY")
 END forKey:"BODY")
      (eval page-layout))
 
-(get "/recycle.ico"
-     (REQUEST setValue:"application/icon" forResponseHeader:"Content-Type")
-     (NSData dataWithContentsOfFile:"public/favicon.ico"))
 
 ;; image uploads
 (post "/postimage"
@@ -260,3 +243,40 @@ END forKey:"BODY")
       (response appendString:((REQUEST requestHeaders) description))
       (response appendString:"\n")
       response)
+
+;; TESTED ACTIONS - the following handlers are tested by Nunja unit tests and should not be changed lightly
+(get "/hello"
+     "hello")
+
+(get "/recycle.ico"
+     (REQUEST setValue:"application/icon" forResponseHeader:"Content-Type")
+     (NSData dataWithContentsOfFile:"sample/public/favicon.ico"))
+
+(get "/follow/:me"
+     (REQUEST setValue:"text/plain" forResponseHeader:"Content-Type")
+     (+ "/follow/" ((REQUEST bindings) "me")))
+
+(get "/:a/before/:b"
+     (REQUEST setValue:"text/plain" forResponseHeader:"Content-Type")
+     (+ "/" ((REQUEST bindings) "b") "/after/" ((REQUEST bindings) "a")))
+
+(get (regex -"^/foo/([^/]+)$")
+     ((REQUEST match) groupAtIndex:1))
+
+(get "/get"
+     (set q (REQUEST query))
+     (set a (((q allKeys) sort) map:
+             (do (key)
+                 (+ key ":" (q key)))))
+     (a componentsJoinedByString:","))
+
+(post "/post"
+      (set q (REQUEST post))
+      (set a (((q allKeys) sort) map:
+              (do (key)
+                  (+ key ":" (q key)))))
+      (a componentsJoinedByString:","))
+
+
+
+
