@@ -234,7 +234,7 @@
 ;; @class NunjaController
 ;; @discussion The Nunja Controller. Responsible for handling requests.
 (class NunjaController is NSObject
-     (ivar (id) handlers (id) root)
+     (ivar (id) handlers (id) root (id) defaultHandler)
      (ivar-accessors)
      
      (set privateSharedController nil) ;; private shared variable
@@ -272,8 +272,9 @@
                          (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
                          (request respondWithData:data))
                     (else
-                         (puts ((NSString alloc) initWithData:(request body) encoding:NSUTF8StringEncoding))
-                         (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}"))))))
+                         (if @defaultHandler
+                             (then (@defaultHandler handleRequest:request))
+                             (else (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}"))))))))
 
 ;; Declare a get action.
 (macro-1 get (pattern *body)
@@ -287,6 +288,13 @@
      `(((NunjaController sharedController) handlers)
        << (NunjaRequestHandler handlerWithAction:"POST"
                pattern:,pattern
+               block:(do (REQUEST) ,@*body))))
+
+;; Declare a 404 handler.
+(macro-1 get-404 (*body)
+     `((NunjaController sharedController) setDefaultHandler:
+          (NunjaRequestHandler handlerWithAction:"GET"
+               pattern:nil
                block:(do (REQUEST) ,@*body))))
 
 ;; Set the top-level directory for a site

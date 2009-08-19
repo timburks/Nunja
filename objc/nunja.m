@@ -61,6 +61,8 @@ static BOOL autotags = YES;
     NSDictionary *_bindings;
     id _cookies;
     int _responded;
+    int _responseCode;
+    NSString *_responseMessage;
 }
 
 @end
@@ -104,6 +106,9 @@ static BOOL autotags = YES;
     }
     // we haven't responded yet
     _responded = NO;
+    // default response code is that everything is ok
+    _responseCode = HTTP_OK;
+    _responseMessage = @"OK";
     return self;
 }
 
@@ -251,6 +256,13 @@ static NSDictionary *nunja_response_headers_helper(struct evhttp_request *req)
     evhttp_clear_headers(req->output_headers);
 }
 
+- (void) setResponseCode:(int) code message:(NSString *) message {
+    _responseCode = code;
+    [message retain];
+    [_responseMessage release];
+    _responseMessage = message;
+}
+
 static void nunja_response_helper(struct evhttp_request *req, int code, NSString *message, NSData *data)
 {
     if (verbose_nunja) {
@@ -266,7 +278,7 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 - (void) respondWithString:(NSString *) string
 {
     if (!_responded) {
-        nunja_response_helper(req, HTTP_OK, @"OK", [string dataUsingEncoding:NSUTF8StringEncoding]);
+        nunja_response_helper(req, _responseCode, _responseMessage, [string dataUsingEncoding:NSUTF8StringEncoding]);
         _responded = YES;
     }
 }
@@ -274,7 +286,7 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
 - (void) respondWithData:(NSData *) data
 {
     if (!_responded) {
-        nunja_response_helper(req, HTTP_OK, @"OK", data);
+        nunja_response_helper(req, _responseCode, _responseMessage, data);
         _responded = YES;
     }
 }
