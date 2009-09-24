@@ -267,10 +267,7 @@
                 (set lastCharacter (path characterAtIndex:(- (path length) 1)))
                 (if (eq lastCharacter '/')
                     (set filename (+ @root "/public" path "index.html"))
-                    (if (and ((NSFileManager defaultManager)
-                              fileExistsAtPath:filename
-                              isDirectory:(set isDirectoryP (NuPointer new)))
-                             (eq (isDirectoryP value) 0))
+                    (if ((NSFileManager defaultManager) directoryExistsAtPath:filename)
                         (set data (NSData dataWithContentsOfFile:filename))
                         (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
                         (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
@@ -279,11 +276,9 @@
         
         (unless handled ;; look for a file or directory that matches the path
                 (set filename (+ @root "/public" path))
-                (if ((NSFileManager defaultManager)
-                     fileExistsAtPath:filename
-                     isDirectory:(set isDirectoryP (NuPointer new)))
+                (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
                     (then
-                         (if (isDirectoryP value)
+                         (if ((NSFileManager defaultManager) directoryExistsAtPath:filename)
                              (then ;; for a directory, redirect to the same path with '/' appended
                                    (request setValue:(+ path "/") forResponseHeader:"Location")
                                    (request respondWithCode:301 message:"moved permanently" string:"Moved Permanently")
@@ -297,10 +292,7 @@
         
         (unless handled ;; try appending .html to the path
                 (set filename (+ @root "/public" path ".html"))
-                (if (and ((NSFileManager defaultManager)
-                          fileExistsAtPath:filename
-                          isDirectory:(set isDirectoryP (NuPointer new)))
-                         (eq (isDirectoryP value) 0))
+                (if ((NSFileManager defaultManager) directoryExistsAtPath:filename)
                     (set data (NSData dataWithContentsOfFile:filename))
                     (request setValue:"text/html" forResponseHeader:"Content-Type")
                     (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")

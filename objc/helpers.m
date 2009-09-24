@@ -413,3 +413,18 @@ void daemonize() {
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
 }
+
+@implementation NSFileManager (Nunja)
+
+- (BOOL) directoryExistsAtPath:(NSString *) path 
+{
+  BOOL isDirectory = NO;
+  BOOL fileExists = [self fileExistsAtPath:path isDirectory:&isDirectory];
+  if (!fileExists) 
+     return NO;
+  else 
+     return isDirectory;
+}
+
+
+@end
