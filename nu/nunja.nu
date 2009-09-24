@@ -48,7 +48,7 @@
                       timeZone:(NSTimeZone timeZoneWithName:"GMT") locale:nil))
         (result appendString:((NSTimeZone timeZoneWithName:"GMT") abbreviation))
         result)
-
+     
      ;; Get an RFC3339-compliant representation of a date.
      (- (id) rfc3339 is
         (set result ((NSMutableString alloc) init))
@@ -263,18 +263,54 @@
                  (if (and (not handled) (handler matchRequest:request))
                      (set handled (handler handleRequest:request)))))
         
-        (unless handled ;; look for a file that matches the path
+        (unless handled ;; does the path end in a '/'? If so, append index.html
+                (set lastCharacter (path characterAtIndex:(- (path length) 1)))
+                (if (eq lastCharacter '/')
+                    (set filename (+ @root "/public" path "index.html"))
+                    (if (and ((NSFileManager defaultManager)
+                              fileExistsAtPath:filename
+                              isDirectory:(set isDirectoryP (NuPointer new)))
+                             (eq (isDirectoryP value) 0))
+                        (set data (NSData dataWithContentsOfFile:filename))
+                        (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
+                        (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
+                        (request respondWithData:data)
+                        (set handled YES))))
+        
+        (unless handled ;; look for a file or directory that matches the path
                 (set filename (+ @root "/public" path))
-                (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
+                (if ((NSFileManager defaultManager)
+                     fileExistsAtPath:filename
+                     isDirectory:(set isDirectoryP (NuPointer new)))
                     (then
-                         (set data (NSData dataWithContentsOfFile:filename))
-                         (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
-                         (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
-                         (request respondWithData:data))
-                    (else
-                         (if @defaultHandler
-                             (then (@defaultHandler handleRequest:request))
-                             (else (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}"))))))))
+                         (if (isDirectoryP value)
+                             (then ;; for a directory, redirect to the same path with '/' appended
+                                   (request setValue:(+ path "/") forResponseHeader:"Location")
+                                   (request respondWithCode:301 message:"moved permanently" string:"Moved Permanently")
+                                   (set handled YES))
+                             (else ;; for a file, send its contents
+                                   (set data (NSData dataWithContentsOfFile:filename))
+                                   (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
+                                   (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
+                                   (request respondWithData:data)
+                                   (set handled YES))))))
+        
+        (unless handled ;; try appending .html to the path
+                (set filename (+ @root "/public" path ".html"))
+                (if (and ((NSFileManager defaultManager)
+                          fileExistsAtPath:filename
+                          isDirectory:(set isDirectoryP (NuPointer new)))
+                         (eq (isDirectoryP value) 0))
+                    (set data (NSData dataWithContentsOfFile:filename))
+                    (request setValue:"text/html" forResponseHeader:"Content-Type")
+                    (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
+                    (request respondWithData:data)
+                    (set handled YES)))
+        
+        (unless handled
+                (if @defaultHandler
+                    (then (@defaultHandler handleRequest:request))
+                    (else (request respondWithCode:404 message:"Not Found" string:"Not Found. You said: #{(request command)} #{(request path)}"))))))
 
 ;; Declare a get action.
 (macro-1 get (pattern *body)
@@ -293,9 +329,9 @@
 ;; Declare a 404 handler.
 (macro-1 get-404 (*body)
      `((NunjaController sharedController) setDefaultHandler:
-          (NunjaRequestHandler handlerWithAction:"GET"
-               pattern:nil
-               block:(do (REQUEST) ,@*body))))
+       (NunjaRequestHandler handlerWithAction:"GET"
+            pattern:nil
+            block:(do (REQUEST) ,@*body))))
 
 ;; Set the top-level directory for a site
 (macro-1 root (top-level-directory)
