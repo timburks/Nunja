@@ -267,7 +267,7 @@
                 (set lastCharacter (path characterAtIndex:(- (path length) 1)))
                 (if (eq lastCharacter '/')
                     (set filename (+ @root "/public" path "index.html"))
-                    (if ((NSFileManager defaultManager) directoryExistsAtPath:filename)
+                    (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
                         (set data (NSData dataWithContentsOfFile:filename))
                         (request setValue:(mime-type filename) forResponseHeader:"Content-Type")
                         (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
@@ -292,7 +292,7 @@
         
         (unless handled ;; try appending .html to the path
                 (set filename (+ @root "/public" path ".html"))
-                (if ((NSFileManager defaultManager) directoryExistsAtPath:filename)
+                (if ((NSFileManager defaultManager) fileExistsAtPath:filename)
                     (set data (NSData dataWithContentsOfFile:filename))
                     (request setValue:"text/html" forResponseHeader:"Content-Type")
                     (request setValue:"max-age=3600" forResponseHeader:"Cache-Control")
