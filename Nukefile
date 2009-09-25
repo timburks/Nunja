@@ -21,6 +21,8 @@
 (set @framework "Nunja")
 (set @framework_identifier "nu.programming.nunja")
 (set @framework_creator_code "????")
+(set @framework_extra_install
+     (do () (SH "sudo cp nunjad /usr/local/bin")))
 
 (compilation-tasks)
 (framework-tasks)
@@ -32,10 +34,3 @@
 
 (task "doc" is (SH "nudoc"))
 
-(task "install" => "framework" is
-      (SH "sudo cp nunjad /usr/local/bin")
-      (SH "sudo rm -rf /Library/Frameworks/#{@framework}.framework")
-      (SH "sudo cp -rp #{@framework}.framework /Library/Frameworks/#{@framework}.framework"))
-
-(task "test" => "framework" is
-      (SH "nutest test/test_*.nu"))
