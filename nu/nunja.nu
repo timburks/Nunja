@@ -231,6 +231,22 @@
         (request setValue:location forResponseHeader:"Location")
         (request respondWithCode:303 message:"redirecting" string:"redirecting")))
 
+(class NunjaCache is NSObject
+     (ivar (id) cache)
+     
+     (- (id) init is (super init) (set @cache (dict)) self)
+     
+     (- (void) setResponse:(id) response forPath:(id)path is
+        (puts "caching response for #{path}")
+        (@cache setObject:response forKey:path))
+     
+     (- (id) handleRequest:(id) request is
+        (set path (request path))
+        (if (set item (@cache objectForKey:path))
+            (then (request respondWithString:item)
+                  t)
+            (else nil))))
+
 ;; @class NunjaController
 ;; @discussion The Nunja Controller. Responsible for handling requests.
 (class NunjaController is NSObject
@@ -247,6 +263,7 @@
         (set @handlers (array))
         (set privateSharedController self)
         (set @root site)
+        (set $cache ((NunjaCache alloc) init))
         (load (+ site "/site.nu"))
         self)
      
@@ -258,10 +275,14 @@
         (request setValue:"Nunja" forResponseHeader:"Server")
         
         (set handled nil)
-        (@handlers each:
-             (do (handler)
-                 (if (and (not handled) (handler matchRequest:request))
-                     (set handled (handler handleRequest:request)))))
+        
+        (set handled ($cache handleRequest:request))
+        
+        (unless handled ;; try using the programmed handlers
+                (@handlers each:
+                     (do (handler)
+                         (if (and (not handled) (handler matchRequest:request))
+                             (set handled (handler handleRequest:request))))))
         
         (unless handled ;; does the path end in a '/'? If so, append index.html
                 (set lastCharacter (path characterAtIndex:(- (path length) 1)))
