@@ -234,6 +234,12 @@
 (class NunjaCache is NSObject
      (ivar (id) cache)
      
+     (set sharedCache nil) ;; closure makes this a class variable
+     
+     (+ (id) sharedCache is
+        (unless sharedCache (set sharedCache ((self alloc) init)))
+        sharedCache)
+     
      (- (id) init is (super init) (set @cache (dict)) self)
      
      (- (void) setResponse:(id) response forPath:(id)path is
@@ -263,7 +269,6 @@
         (set @handlers (array))
         (set privateSharedController self)
         (set @root site)
-        (set $cache ((NunjaCache alloc) init))
         (load (+ site "/site.nu"))
         self)
      
@@ -276,7 +281,7 @@
         
         (set handled nil)
         
-        (set handled ($cache handleRequest:request))
+        (set handled ((NunjaCache sharedCache) handleRequest:request))
         
         (unless handled ;; try using the programmed handlers
                 (@handlers each:
