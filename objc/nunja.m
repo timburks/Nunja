@@ -193,6 +193,11 @@ static BOOL autotags = YES;
     }
 }
 
+- (NSString *) method 
+{
+   return [self command];
+}
+
 - (NSString *) remoteHost
 {
     return [NSString stringWithCString:req->remote_host encoding:NSUTF8StringEncoding];
