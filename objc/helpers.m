@@ -77,30 +77,26 @@ static char int_to_char[] = "0123456789ABCDEF";
     NSMutableString *result = [NSMutableString string];
     int i = 0;
     int max = [self length];
+    char *buffer = (char *) malloc (max * sizeof(char));
+    int j = 0;
     while (i < max) {
-        unichar c = [self characterAtIndex:i++];
+        char c = [self characterAtIndex:i++];
         switch (c) {
             case '+':
-                [result appendString:@" "];
+                buffer[j++] = ' ';
                 break;
             case '%':
-            #ifdef DARWIN
-                [result appendFormat:@"%C",
-                #else
-                    [result appendFormat:@"%c",
-                #endif
+                buffer[j++] =
                     char_to_int([self characterAtIndex:i++])*16
-                    + char_to_int([self characterAtIndex:i++])];
+                    + char_to_int([self characterAtIndex:i++]);
                 break;
             default:
-            #ifdef DARWIN
-                [result appendFormat:@"%C", c];
-            #else
-                [result appendFormat:@"%c", c];
-            #endif
+                buffer[j++] = c;
+                break;
         }
     }
-    return result;
+    buffer[j] = 0;
+    return [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
 }
 
 - (NSDictionary *) urlQueryDictionary
@@ -117,6 +113,7 @@ static char int_to_char[] = "0123456789ABCDEF";
             [result setObject:value forKey:key];
         }
     }
+    NSLog(@"decoded %@", result);
     return result;
 }
 
@@ -136,8 +133,6 @@ static char int_to_char[] = "0123456789ABCDEF";
 }
 
 @end
-
-
 
 static NSMutableDictionary *parseHeaders(const char *headers)
 {
@@ -224,29 +219,31 @@ static NSMutableDictionary *parseHeaders(const char *headers)
                     while ((bytes[cursor2] != (char) 0x0d) ||
                         (bytes[cursor2+1] != (char) 0x0a) ||
                         (bytes[cursor2+2] != (char) 0x0d) ||
-                        (bytes[cursor2+3] != (char) 0x0a)) {
+                    (bytes[cursor2+3] != (char) 0x0a)) {
                         cursor2++;
                         if (cursor2 + 4 == max) {
-			   // something is wrong.
-                           break;
+                            // something is wrong.
+                            break;
                         }
                     }
-	            if (cursor2 + 4 == max) {
-		       // it's over
-		       break; 
-                    } else {
+                    if (cursor2 + 4 == max) {
+                        // it's over
+                        break;
+                    }
+                    else {
                         int lengthOfHeaders = cursor2 - startOfHeaders;
                         char *headers = (char *) malloc((lengthOfHeaders + 1) * sizeof(char));
                         strncpy(headers, bytes+startOfHeaders, lengthOfHeaders);
                         headers[lengthOfHeaders] = 0;
-    
+
                         // Process headers.
                         NSMutableDictionary *item = parseHeaders(headers);
-    
-                        int startOfData = cursor2 + 4;// skip CR/LF pair
-                                                      // skip CR/LF and final two hyphens
+
+                                                  // skip CR/LF pair
+                        int startOfData = cursor2 + 4;
+                                                  // skip CR/LF and final two hyphens
                         int lengthOfData = cursor - startOfData - 4;
-    
+
                         if (([item valueForKey:@"Content-Type"] == nil) && ([item valueForKey:@"filename"] == nil)) {
                             NSString *string = [[[NSString alloc] initWithBytes:(bytes+startOfData) length:lengthOfData encoding:NSUTF8StringEncoding] autorelease];
                             [dict setObject:string forKey:[item valueForKey:@"name"]];
@@ -299,70 +296,66 @@ static const char *const digits = "0123456789abcdef";
 
 - (NSData *) md5
 {
-   unsigned char *digest = MD5([self bytes], [self length], NULL);
-   return [NSData dataWithBytes:digest length:16];
+    unsigned char *digest = MD5([self bytes], [self length], NULL);
+    return [NSData dataWithBytes:digest length:16];
 }
 
-- (NSData *) hmac_sha1:(NSData *) key {
-   char hash[1024];
-   int hashlen;
-   unsigned char *digest = HMAC(EVP_sha1(), [key bytes], [key length], [self bytes], [self length], hash, &hashlen);
-   return [NSData dataWithBytes:hash length:hashlen];
-}
-
-
-- (NSString *) base64 
+- (NSData *) hmac_sha1:(NSData *) key
 {
-  const char *input = [self bytes];
-  int length = [self length];
-  BIO *bmem, *b64;
-  BUF_MEM *bptr;
-
-  b64 = BIO_new(BIO_f_base64());
-  bmem = BIO_new(BIO_s_mem());
-  b64 = BIO_push(b64, bmem);
-  BIO_write(b64, input, length);
-  BIO_flush(b64);
-  BIO_get_mem_ptr(b64, &bptr);
-
-  char *buff = (char *)malloc(bptr->length);
-  memcpy(buff, bptr->data, bptr->length-1);
-  buff[bptr->length-1] = 0;
-
-  BIO_free_all(b64);
-
-  return [NSString stringWithCString:buff encoding:NSUTF8StringEncoding];
+    char hash[1024];
+    int hashlen;
+    unsigned char *digest = HMAC(EVP_sha1(), [key bytes], [key length], [self bytes], [self length], hash, &hashlen);
+    return [NSData dataWithBytes:hash length:hashlen];
 }
 
-
-@end
-
-@implementation NSString (Base64) 
-
-- (NSData *) dataUsingBase64Encoding 
+- (NSString *) base64
 {
-  BIO *b64, *bmem;
+    const char *input = [self bytes];
+    int length = [self length];
+    BIO *bmem, *b64;
+    BUF_MEM *bptr;
 
-  int length = [self length];
-  unsigned char *input = [self cStringUsingEncoding:NSASCIIStringEncoding];
+    b64 = BIO_new(BIO_f_base64());
+    bmem = BIO_new(BIO_s_mem());
+    b64 = BIO_push(b64, bmem);
+    BIO_write(b64, input, length);
+    BIO_flush(b64);
+    BIO_get_mem_ptr(b64, &bptr);
 
-  char *buffer = (char *)malloc(length);
-  memset(buffer, 0, length);
+    char *buff = (char *)malloc(bptr->length);
+    memcpy(buff, bptr->data, bptr->length-1);
+    buff[bptr->length-1] = 0;
 
-  b64 = BIO_new(BIO_f_base64());
-  bmem = BIO_new_mem_buf(input, length);
-  bmem = BIO_push(b64, bmem);
+    BIO_free_all(b64);
 
-  int outputLength = BIO_read(bmem, buffer, length);
-  BIO_free_all(bmem);
-
-  return [NSData dataWithBytesNoCopy:buffer length:outputLength];
+    return [NSString stringWithCString:buff encoding:NSUTF8StringEncoding];
 }
 
 @end
 
+@implementation NSString (Base64)
 
+- (NSData *) dataUsingBase64Encoding
+{
+    BIO *b64, *bmem;
 
+    int length = [self length];
+    unsigned char *input = [self cStringUsingEncoding:NSASCIIStringEncoding];
+
+    char *buffer = (char *)malloc(length);
+    memset(buffer, 0, length);
+
+    b64 = BIO_new(BIO_f_base64());
+    bmem = BIO_new_mem_buf(input, length);
+    bmem = BIO_push(b64, bmem);
+
+    int outputLength = BIO_read(bmem, buffer, length);
+    BIO_free_all(bmem);
+
+    return [NSData dataWithBytesNoCopy:buffer length:outputLength];
+}
+
+@end
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -375,56 +368,55 @@ static const char *const digits = "0123456789abcdef";
 #include <string.h>
 
 // http://www.netzmafia.de/skripten/unix/linux-daemon-howto.html
-void daemonize() {
- pid_t pid, sid;
-        
-        /* Fork off the parent process */
-        pid = fork();
-        if (pid < 0) {
-                exit(EXIT_FAILURE);
-        }
-        /* If we got a good PID, then
-           we can exit the parent process. */
-        if (pid > 0) {
-                exit(EXIT_SUCCESS);
-        }
+void daemonize()
+{
+    pid_t pid, sid;
 
-        /* Change the file mode mask */
-        umask(0);       
-        
-        /* Open any logs here */
-        
-        /* Create a new SID for the child process */
-        sid = setsid();
-        if (sid < 0) {
-                /* Log any failures here */
-                exit(EXIT_FAILURE);
-        }
-        
-        
-        /* Change the current working directory */
-        if ((chdir("/")) < 0) {
-                /* Log any failures here */
-                exit(EXIT_FAILURE);
-        }
-        
-        /* Close out the standard file descriptors */
-        close(STDIN_FILENO);
-        close(STDOUT_FILENO);
-        close(STDERR_FILENO);
+    /* Fork off the parent process */
+    pid = fork();
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
+    /* If we got a good PID, then
+       we can exit the parent process. */
+    if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
+
+    /* Change the file mode mask */
+    umask(0);
+
+    /* Open any logs here */
+
+    /* Create a new SID for the child process */
+    sid = setsid();
+    if (sid < 0) {
+        /* Log any failures here */
+        exit(EXIT_FAILURE);
+    }
+
+    /* Change the current working directory */
+    if ((chdir("/")) < 0) {
+        /* Log any failures here */
+        exit(EXIT_FAILURE);
+    }
+
+    /* Close out the standard file descriptors */
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 }
 
 @implementation NSFileManager (Nunja)
 
-- (BOOL) directoryExistsAtPath:(NSString *) path 
+- (BOOL) directoryExistsAtPath:(NSString *) path
 {
-  BOOL isDirectory = NO;
-  BOOL fileExists = [self fileExistsAtPath:path isDirectory:&isDirectory];
-  if (!fileExists) 
-     return NO;
-  else 
-     return isDirectory;
+    BOOL isDirectory = NO;
+    BOOL fileExists = [self fileExistsAtPath:path isDirectory:&isDirectory];
+    if (!fileExists)
+        return NO;
+    else
+        return isDirectory;
 }
-
 
 @end
