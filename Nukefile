@@ -6,15 +6,13 @@
 (case SYSTEM
       ("Darwin"
                (set @cflags "-g -fobjc-gc -DDARWIN")
-               (set @ldflags  "-framework Foundation -framework Nu -levent -lcrypto"))
+               (set @ldflags  "-framework Foundation -framework Nu -lcurl -levent -lcrypto"))
       ("Linux"
               (set @arch (list "i386"))
-              ;; (set @cflags "-g -DLINUX -I/usr/local/include -fconstant-string-class=NSConstantString ")
-              ;; (set @ldflags "-L/usr/local/lib -lNuFound -lNu -levent -lcrypto")
               (set gnustep_flags ((NSString stringWithShellCommand:"gnustep-config --objc-flags") chomp))
               (set gnustep_libs ((NSString stringWithShellCommand:"gnustep-config --base-libs") chomp))
               (set @cflags "-g -DLINUX -I/usr/local/include #{gnustep_flags}")
-              (set @ldflags "#{gnustep_libs} -lNu -levent -lcrypto"))
+              (set @ldflags "#{gnustep_libs} -lNu -lcurl -levent -lcrypto"))
       (else nil))
 
 ;; framework description

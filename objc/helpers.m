@@ -113,7 +113,6 @@ static char int_to_char[] = "0123456789ABCDEF";
             [result setObject:value forKey:key];
         }
     }
-    NSLog(@"decoded %@", result);
     return result;
 }
 
