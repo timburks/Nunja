@@ -17,6 +17,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+(load "NuHTTPHelpers")
 (load "Nunja")
 
 (set exit (NuBridgedFunction functionWithName:"exit" signature:"vi"))

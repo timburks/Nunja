@@ -3,7 +3,7 @@
 ;;
 ;;  Copyright (c) 2009 Tim Burks, Neon Design Technology, Inc.
 
-(load "Nunja")
+(load "NuHTTPHelpers")
 
 (class TestBase64 is NuTestCase
      

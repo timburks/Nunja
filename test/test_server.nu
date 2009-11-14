@@ -3,6 +3,7 @@
 ;;
 ;;  Copyright (c) 2009 Tim Burks, Neon Design Technology, Inc.
 
+(load "NuHTTPHelpers")
 (load "Nunja")
 
 (set sleep (NuBridgedFunction functionWithName:"sleep" signature:"vi"))
