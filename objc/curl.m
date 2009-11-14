@@ -26,7 +26,9 @@ limitations under the License.
 
 #import <Foundation/Foundation.h>
 
-#import "helpers.h"
+@interface NSDictionary (NuHTTPHelpers)
+- (NSString *) urlQueryString;
+@end
 
 // this class is a drop-in replacement for NSMutableData
 // it calls a handler for each line of data that it receives
