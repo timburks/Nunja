@@ -21,7 +21,7 @@
 (case (set SYSTEM ((NSString stringWithShellCommand:"uname") chomp))
       ("Darwin" (import Foundation))
       ("Linux" (global NSLog (NuBridgedFunction functionWithName:"NSLog" signature:"v@"))
-               (global NSUTF8StringEncoding 1))
+               (global NSUTF8StringEncoding 4))
       (else nil))
 
 (load "Nu:template")
