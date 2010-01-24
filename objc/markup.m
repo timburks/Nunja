@@ -71,10 +71,14 @@
             else if ([evaluatedItem isKindOfClass:[NSArray class]]) {
                 int max = [evaluatedItem count];
                 for (int i = 0; i < max; i++) {
-                   [body appendString:[evaluatedItem objectAtIndex:i]];
+                    [body appendString:[evaluatedItem objectAtIndex:i]];
                 }
-            } else {
-               [body appendString:[evaluatedItem stringValue]];
+            }
+            else if (evaluatedItem == [NSNull null]) {
+               // do nothing
+            }
+            else {
+                [body appendString:[evaluatedItem stringValue]];
             }
         }
         if (cursor && (cursor != [NSNull null]))
