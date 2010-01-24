@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 
-
 @interface NuOperator : NSObject
 {
 }
@@ -65,7 +64,18 @@
             }
         }
         else {
-            [body appendString:[item evalWithContext:context]];
+            id evaluatedItem = [item evalWithContext:context];
+            if ([evaluatedItem isKindOfClass:[NSString class]]) {
+                [body appendString:evaluatedItem];
+            }
+            else if ([evaluatedItem isKindOfClass:[NSArray class]]) {
+                int max = [evaluatedItem count];
+                for (int i = 0; i < max; i++) {
+                   [body appendString:[evaluatedItem objectAtIndex:i]];
+                }
+            } else {
+               [body appendString:[evaluatedItem stringValue]];
+            }
         }
         if (cursor && (cursor != [NSNull null]))
             cursor = [cursor cdr];

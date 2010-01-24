@@ -6,7 +6,7 @@
 (case SYSTEM
       ("Darwin"
                (set @arch (list "i386"))
-               (set @cflags "-g -fobjc-gc -DDARWIN")
+               (set @cflags "-g -std=gnu99 -fobjc-gc -DDARWIN")
                (set @ldflags  "-framework Foundation -framework Nu -levent -lcrypto"))
       ("Linux"
               (set @arch (list "i386"))
