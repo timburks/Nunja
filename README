@@ -17,6 +17,10 @@ be sure that libevent is installed on your system. The
 default build configuration expects libevent to be installed
 in /usr/local.
 
+Helpers for working with URL query strings have been 
+factored out into a separate project, NuHTTPHelpers, 
+which is now required to run Nunja.
+
 On Linux systems, Nunja requires an implementation of the
 Foundation classes. It has been tested with NuFound, a
 modified version of the libFoundation library that has been
