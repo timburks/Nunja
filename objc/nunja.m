@@ -261,6 +261,10 @@ static NSDictionary *nunja_response_headers_helper(struct evhttp_request *req)
     evhttp_clear_headers(req->output_headers);
 }
 
+- (int) responseCode {
+    return _responseCode;
+}
+
 - (void) setResponseCode:(int) code message:(NSString *) message {
     _responseCode = code;
     [message retain];
@@ -280,36 +284,40 @@ static void nunja_response_helper(struct evhttp_request *req, int code, NSString
     evbuffer_free(buf);
 }
 
-- (void) respondWithString:(NSString *) string
+- (BOOL) respondWithString:(NSString *) string
 {
     if (!_responded) {
         nunja_response_helper(req, _responseCode, _responseMessage, [string dataUsingEncoding:NSUTF8StringEncoding]);
         _responded = YES;
     }
+    return YES;
 }
 
-- (void) respondWithData:(NSData *) data
+- (BOOL) respondWithData:(NSData *) data
 {
     if (!_responded) {
         nunja_response_helper(req, _responseCode, _responseMessage, data);
         _responded = YES;
     }
+    return YES;
 }
 
-- (void) respondWithCode:(int) code message:(NSString *) message string:(NSString *) string
+- (BOOL) respondWithCode:(int) code message:(NSString *) message string:(NSString *) string
 {
     if (!_responded) {
         nunja_response_helper(req, code, message, [string dataUsingEncoding:NSUTF8StringEncoding]);
         _responded = YES;
     }
+    return YES;
 }
 
-- (void) respondWithCode:(int) code message:(NSString *) message data:(NSData *) data
+- (BOOL) respondWithCode:(int) code message:(NSString *) message data:(NSData *) data
 {
     if (!_responded) {
         nunja_response_helper(req, code, message, data);
         _responded = YES;
     }
+    return YES;
 }
 
 @end
