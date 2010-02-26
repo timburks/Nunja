@@ -39,6 +39,14 @@
                       timeZone:(NSTimeZone localTimeZone) locale:nil))
         (result appendString:((NSTimeZone localTimeZone) abbreviation))
         result)
+
+     ;; Get an RFC822-compliant representation of a date, expressed in GMT.
+     (- (id) rfc822-GMT is
+        (set result ((NSMutableString alloc) init))
+        (result appendString:
+                (self descriptionWithCalendarFormat:"%a, %d %b %Y %H:%M:%S GMT"
+		      timeZone:(NSTimeZone timeZoneWithName:"GMT") locale:nil))
+        result)
      
      ;; Get an RFC1123-compliant representation of a date.
      (- (id) rfc1123 is
