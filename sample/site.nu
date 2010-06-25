@@ -14,6 +14,8 @@
 ;;   See the License for the specific language governing permissions and
 ;;   limitations under the License.
 
+(load "NuHTTPHelpers")
+
 ;; global variables
 (set sessionCookies (dict))
 (set friends (array))
