@@ -1,5 +1,5 @@
 /*!
-@file util.m
+@file Nunja_daemonize.m
 @discussion General utilities for the Nunja web server.
 @copyright Copyright (c) 2008 Neon Design Technology, Inc.
 
@@ -27,9 +27,13 @@ limitations under the License.
 #include <string.h>
 
 #import <Foundation/Foundation.h>
+#import "Nunja.h"
 
 // http://www.netzmafia.de/skripten/unix/linux-daemon-howto.html
-void daemonize()
+
+@implementation Nunja (daemonize)
+
++ (void) daemonize
 {
     pid_t pid, sid;
 
@@ -66,18 +70,6 @@ void daemonize()
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-}
-
-@implementation NSFileManager (Nunja)
-
-- (BOOL) directoryExistsAtPath:(NSString *) path
-{
-    BOOL isDirectory = NO;
-    BOOL fileExists = [self fileExistsAtPath:path isDirectory:&isDirectory];
-    if (!fileExists)
-        return NO;
-    else
-        return isDirectory;
 }
 
 @end

@@ -17,8 +17,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-(load "NuHTTPHelpers")
 (load "Nunja")
+(load "NuHTTPHelpers")
 
 (set exit (NuBridgedFunction functionWithName:"exit" signature:"vi"))
 
@@ -41,6 +41,7 @@
 ;; the option(s) we need to set
 (set site nil)
 (set port 3000)
+(set localOnly NO)
 
 ;; process the remaining arguments
 (while (< argi (argv count))
@@ -49,22 +50,23 @@
              ("--site"    (set argi (+ argi 1)) (set site (argv argi)))
              ("-p"        (set argi (+ argi 1)) (set port ((argv argi) intValue)))
              ("--port"    (set argi (+ argi 1)) (set port ((argv argi) intValue)))
-             ("-l"        (Nunja setLocalOnly:YES))
-             ("--local"   (Nunja setLocalOnly:YES))
+             ("-l"        (set localOnly YES))
+             ("--local"   (set localOnly YES))
              ("-v"        (Nunja setVerbose:YES))
              ("--verbose" (Nunja setVerbose:YES))
              (else (puts (+ "unknown option: " (argv argi)))
                    (exit -1)))
        (set argi (+ argi 1)))
 
-(set n ((Nunja alloc) init))
-(if (Nunja localOnly)
+(set n (Nunja nunja))
+(if localOnly
     (then (n bindToAddress:"127.0.0.1" port:port))
     (else (n bindToAddress:"0.0.0.0" port:port)))
 
 (if site
-    (n setController:((NunjaController alloc) initWithSite:site)))
+    (n setDelegate:((NunjaDelegate alloc) initWithSite:site)))
 (puts (+ "Nunja is running on port " port))
 (set $site site) ;; make the path to the site directory available to handlers
+((n delegate) dump)
 (n run)
 

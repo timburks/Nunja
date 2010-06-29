@@ -15,6 +15,47 @@
 ;;   limitations under the License.
 
 (load "NuHTTPHelpers")
+(load "Nu:template")
+
+;; import some useful C functions
+(global random  (NuBridgedFunction functionWithName:"random" signature:"l"))
+(global srandom (NuBridgedFunction functionWithName:"srandom" signature:"vI"))
+
+(class NunjaRequest
+     (- post is ((self body) urlQueryDictionary)))
+
+;; @class NunjaCookie
+;; @discussion A class for managing user-identifying cookies.
+(class NunjaCookie is NSObject
+     (ivars)
+     (ivar-accessors)
+     
+     ;; Generate a random identifier for use in a cookie.
+     (+ (id) randomIdentifier is
+        "#{((random) stringValue)}#{((random) stringValue)}#{((random) stringValue)}#{((random) stringValue)}")
+     
+     ;; Construct a cookie for a specified user.
+     (+ (id) cookieForUser:(id) user is
+        ((self alloc) initWithUser:user
+         value:(self randomIdentifier)
+         expiration:(NSDate dateWithTimeIntervalSinceNow:3600)))
+     
+     ;; Initialize a cookie for a specified user.
+     (- (id) initWithUser:(id) user value:(id) value expiration:(id) expiration is
+        (super init)
+        (set @name "session")
+        (set @user user)
+        (set @value value)
+        (set @expiration expiration)
+        (set @stringValue nil)
+        self)
+     
+     ;; Get a string description of a cookie.
+     (- (id) description is
+        "cookie=#{@name} value=#{@value} user=#{@user} expiration=#{(@expiration rfc822)}")
+     
+     ;; Get a string value for a cookie suitable for inclusion in a response header.
+     (- (id) stringValue is "#{@name}=#{@value}; Expires:#{(@expiration rfc1123)}; Path=/"))
 
 ;; global variables
 (set sessionCookies (dict))
@@ -88,7 +129,7 @@ HTML)) forKey:"BODY")
       (set post (REQUEST post))
       (if (eq (post "response") "Cancel")
           (then
-               (Nunja redirectResponse:REQUEST toLocation:"/"))
+               (REQUEST redirectResponseToLocation:"/"))
           (else
                (set username (post "username"))
                (set password (post "password"))
@@ -97,7 +138,7 @@ HTML)) forKey:"BODY")
                         (set sessionCookie (NunjaCookie cookieForUser:username))
                         (sessionCookies setObject:sessionCookie forKey:(sessionCookie value))
                         (REQUEST setValue:(sessionCookie stringValue) forResponseHeader:"Set-Cookie")
-                        (Nunja redirectResponse:REQUEST toLocation:"/"))
+                        (REQUEST redirectResponseToLocation:"/"))
                    (else
                         (RESPONSE setValue:"Please try again" forKey:"TITLE")
                         (RESPONSE setValue:(eval (NuTemplate codeForString:<<-HTML
@@ -115,7 +156,7 @@ HTML)) forKey:"BODY")
 (get "/logout"
      (set sessionCookieName ((REQUEST cookies) "session"))
      (if sessionCookieName (sessionCookies removeObjectForKey:sessionCookieName))
-     (Nunja redirectResponse:REQUEST toLocation:"/"))
+     (REQUEST redirectResponseToLocation:"/"))
 
 ;; add-a-friend page.
 (get "/addfriend"
@@ -139,13 +180,13 @@ HTML)) forKey:"BODY")
       (set post (REQUEST post))
       (if (eq (post "response") "Submit")
           (friends << (dict name:(post "name") email:(post "email"))))
-      (Nunja redirectResponse:REQUEST toLocation:"/"))
+      (REQUEST redirectResponseToLocation:"/"))
 
 ;; delete-a-friend with a GET. Strictly, this should be a post, but we use a get to show how it would be done.
 (get "/delete"
      (set post (REQUEST query))
      (set friends (friends select:(do (friend) (!= (friend "name") (post "name")))))
-     (Nunja redirectResponse:REQUEST toLocation:"/"))
+     (REQUEST redirectResponseToLocation:"/"))
 
 (get "/about"
      (set RESPONSE (dict))
@@ -186,9 +227,9 @@ END forKey:"BODY")
       (eval page-layout))
 
 ;; large file download
-(get (regex -"/data(.*)")
+(get "/data/size:"
      (REQUEST setValue:"application/octet-stream" forResponseHeader:"Content-Type")
-     (set size ((REQUEST match) groupAtIndex:1))
+     (set size ((REQUEST bindings) size:))
      (set megabytes (if (eq size "")
                         then 1
                         else (size doubleValue)))
@@ -196,8 +237,8 @@ END forKey:"BODY")
 
 ;; perform a dns lookup
 ;; ex: /dns/programming.nu
-(get (regex -"/dns/(.*)")
-     (set hostname ((REQUEST match) groupAtIndex:1))
+(get "/dns/hostname:"
+     (set hostname ((REQUEST bindings) hostname:))
      ((REQUEST nunja) resolveDomainName:hostname andDo:
       (do (address)
           (if address
@@ -206,23 +247,25 @@ END forKey:"BODY")
               (REQUEST respondWithString:"unable to resolve #{hostname}"))))
      nil) ;; return nil to leave the connection open
 
-;; request and return a resource from a specified host
-;; ex: /proxy/programming.nu/about
-(get (regex -"/proxy/([^\/]+)/(.*)")
-     (set host ((REQUEST match) groupAtIndex:1))
-     (set path (+ "/" ((REQUEST match) groupAtIndex:2)))
-     ((REQUEST nunja) resolveDomainName:host andDo:
-      (do (address)
-          (if address
-              (then ((REQUEST nunja) getResourceFromHost:host address:address port:80 path:path andDo:
-                     (do (data)
-                         (if data
-                             (then (REQUEST respondWithData:data))
-                             (else (REQUEST respondWithString:"unable to load #{path}"))))))
-              (else (REQUEST respondWithString:"unable to resolve host #{host}")))))
-     nil) ;; return nil to leave the connection open
+(if NO
+    ;; request and return a resource from a specified host
+    ;; ex: /proxy/programming.nu/about
+    (get (regex -"/proxy/([^\/]+)/(.*)")
+         (set host ((REQUEST match) groupAtIndex:1))
+         (set path (+ "/" ((REQUEST match) groupAtIndex:2)))
+         ((REQUEST nunja) resolveDomainName:host andDo:
+          (do (address)
+              (if address
+                  (then ((REQUEST nunja) getResourceFromHost:host address:address port:80 path:path andDo:
+                         (do (data)
+                             (if data
+                                 (then (REQUEST respondWithData:data))
+                                 (else (REQUEST respondWithString:"unable to load #{path}"))))))
+                  (else (REQUEST respondWithString:"unable to resolve host #{host}")))))
+         nil) ;; return nil to leave the connection open
+    )
 
-(get (regex -"/posttest")
+(get "/posttest"
      (set host "localhost")
      (set path "/login")
      ((REQUEST nunja) resolveDomainName:host andDo:
@@ -252,18 +295,15 @@ END forKey:"BODY")
 
 (get "/recycle.ico"
      (REQUEST setValue:"application/icon" forResponseHeader:"Content-Type")
-     (NSData dataWithContentsOfFile:"sample/public/favicon.ico"))
+     (NSData dataWithContentsOfFile:"public/favicon.ico"))
 
-(get "/follow/:me"
+(get "/follow/me:"
      (REQUEST setValue:"text/plain" forResponseHeader:"Content-Type")
      (+ "/follow/" ((REQUEST bindings) "me")))
 
-(get "/:a/before/:b"
+(get "/a:/before/b:"
      (REQUEST setValue:"text/plain" forResponseHeader:"Content-Type")
      (+ "/" ((REQUEST bindings) "b") "/after/" ((REQUEST bindings) "a")))
-
-(get (regex -"^/foo/([^/]+)$")
-     ((REQUEST match) groupAtIndex:1))
 
 (get "/get"
      (set q (REQUEST query))
@@ -279,6 +319,7 @@ END forKey:"BODY")
                   (+ key ":" (q key)))))
       (a componentsJoinedByString:","))
 
-
+(get-404
+        "Resource Not Found: #{(REQUEST path)}")
 
 
