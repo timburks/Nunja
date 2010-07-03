@@ -34,11 +34,11 @@
         NSLog(@"request from host %@ port %d", [request remoteHost], [request remotePort]);
     }
 	
-    id args = [[[NSClassFromString(@"NuCell") alloc] init] autorelease];
+    id args = [[[NuCell alloc] init] autorelease];
     [args setCar:request];
 	
 	id body = nil;
-	if ([block isKindOfClass:NSClassFromString(@"NuBlock")]) {
+	if ([block isKindOfClass:[NuBlock class]]) {
 		// evaluate block with request as the single argument
 		body = [block evalWithArguments:args context:[NSMutableDictionary dictionary]];
 	} 
@@ -55,7 +55,7 @@
 
     static id text_html_pattern = nil;
     if (!text_html_pattern) {
-        text_html_pattern = [[NSClassFromString(@"NuRegex") regexWithPattern:@"^text/html.*$"] retain];
+        text_html_pattern = [[NuRegex regexWithPattern:@"^text/html.*$"] retain];
     }
 
     id content_type;

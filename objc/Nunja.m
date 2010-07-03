@@ -162,7 +162,7 @@ static void nunja_dns_gethostbyname_cb(int result, char type, int count, int ttl
         }
     }
     NuBlock *block = (NuBlock *) arg;
-    id<NuCell> args = [[NSClassFromString(@"NuCell") alloc] init];
+    NuCell *args = [[NuCell alloc] init];
     [args setCar:address];
     [block evalWithArguments:args context:nil];
     [block release];
@@ -193,7 +193,7 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
         data = [NSData dataWithBytes:EVBUFFER_DATA(req->input_buffer) length:EVBUFFER_LENGTH(req->input_buffer)];
     }
     NuBlock *block = (NuBlock *) arg;
-    id<NuCell> args = [[NSClassFromString(@"NuCell") alloc] init];
+    NuCell *args = [[NuCell alloc] init];
     [args setCar:data];
     [block evalWithArguments:args context:nil];
     [block release];
@@ -210,7 +210,7 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
     struct evhttp_connection *evcon = evhttp_connection_new([address cStringUsingEncoding:NSUTF8StringEncoding], port);
     if (evcon == NULL) {
         fprintf(stdout, "FAILED to connect\n");
-        id<NuCell> args = [[NSClassFromString(@"NuCell") alloc] init];
+        NuCell *args = [[NuCell alloc] init];
         [block evalWithArguments:args context:nil];
         [block release];
         [args release];
@@ -232,7 +232,7 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
     struct evhttp_connection *evcon = evhttp_connection_new([address cStringUsingEncoding:NSUTF8StringEncoding], port);
     if (evcon == NULL) {
         fprintf(stdout, "FAILED to connect\n");
-        id<NuCell> args = [[NSClassFromString(@"NuCell") alloc] init];
+        NuCell *args = [[NuCell alloc] init];
         [block evalWithArguments:args context:nil];
         [block release];
         [args release];

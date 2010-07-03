@@ -41,7 +41,7 @@
     if (c == '?') {
         i = i + 1;
         base = i;
-        while ((i < max) && ((c = [_uri characterAtIndex:i])))
+        while ((i < max) && [_uri characterAtIndex:i])
             i++;
         NSString *queryString = [_uri substringWithRange:NSMakeRange(base, i-base)];
         _query = [[queryString urlQueryDictionary] retain];
@@ -255,9 +255,9 @@ void nunja_response_helper(struct evhttp_request *req, int code, NSString *messa
 
 - (NSDictionary *) cookies
 {
-    static id<NuRegex> cookie_pattern = nil;
+    static NuRegex *cookie_pattern = nil;
     if (!cookie_pattern) {
-        cookie_pattern = [[NSClassFromString(@"NuRegex") regexWithPattern:@"[ ]*([^=]*)=(.*)"] retain];
+        cookie_pattern = [[NuRegex regexWithPattern:@"[ ]*([^=]*)=(.*)"] retain];
     }
     if (!_cookies) {
         _cookies = [[NSMutableDictionary alloc] init];

@@ -25,14 +25,16 @@ static NunjaDelegate *_sharedDelegate;
 {
 	self = [self init];
 	
-	id parser = [NSClassFromString(@"Nu") parser];
-		
+	id parser = [Nu parser];
+	
 	// set working directory to site path
 	chdir([site cStringUsingEncoding:NSUTF8StringEncoding]);
 	
 	// load site description
 	NSString *filename = [NSString stringWithFormat:@"site.nu", site];
-	NSString *sourcecode = [NSString stringWithContentsOfFile:filename];
+	NSString *sourcecode = [NSString stringWithContentsOfFile:filename
+													 encoding:NSUTF8StringEncoding
+														error:nil];
 	if (sourcecode) {
 		[parser parseEval:sourcecode];	
 	}
