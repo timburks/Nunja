@@ -16,51 +16,9 @@
  limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import <Nu/Nu.h>
-
-@class NunjaRequest;
-
-@protocol NunjaDelegateProtocol
-// Override this to perform Objective-C setup of your Nunja.
-- (void) nunjaDidFinishLaunching;
-
-// Call this within nunjaDidFinishLaunching to add a handler.
-- (void) addHandlerWithHTTPMethod:(NSString *)httpMethod path:(NSString *)path block:(id)block;
-
-// Call this within nunjaDidFinishLaunching to set the 404 handler.
-- (void) setDefaultHandlerWithBlock:(id) block;
-
-// Override this to add your own custom request processing. You probably won't need this.
-- (void) handleRequest:(NunjaRequest *)request;
-@end
-
-
-@interface Nunja : NSObject {}
-// Get a Nunja instance. We only support one per process.
-+ (Nunja *) nunja;
-
-// Control logging
-+ (void) setVerbose:(BOOL) v;
-+ (BOOL) verbose;
-
-// Known MIME types
-+ (NSMutableDictionary *) mimeTypes;
-+ (void) setMimeTypes:(NSMutableDictionary *) dictionary;
-+ (NSString *) mimeTypeForFileWithName:(NSString *) filename;
-
-// The delegate performs all request handling.
-- (void) setDelegate:(id<NunjaDelegateProtocol>) d;
-- (id<NunjaDelegateProtocol>) delegate;
-
-// Bind the server to a specified address and port.
-- (int) bindToAddress:(NSString *) address port:(int) port;
-
-// Run the server.
-- (void) run;
-
-@end
-
-
-// Run Nunja. Pass nil for NunjaDelegateClassName to set up your site with Nu (site.nu).
-int NunjaMain(int argc, const char *argv[], NSString *NunjaDelegateClassName);
+#import <Nunja/NunjaMain.h>
+#import <Nunja/NunjaDelegate.h>
+#import <Nunja/NunjaRequest.h>
+#import <Nunja/NunjaRequestHandler.h>
+#import <Nunja/NunjaRequestRouter.h>
+#import <Nunja/NSFileManager_Nunja.h>

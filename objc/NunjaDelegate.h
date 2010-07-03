@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#import "Nunja.h"
 
 @class NunjaRequestHandler;
 @class NunjaRequestRouter;

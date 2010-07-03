@@ -233,7 +233,10 @@ END forKey:"BODY")
      (set megabytes (if (eq size "")
                         then 1
                         else (size doubleValue)))
-     (set data (NSData dataWithSize:(* megabytes 1024 1024))))
+     (puts (+ "requesting " megabytes))
+     (set data ((NSData dataWithSize:(* megabytes 1024 1024)) copy))
+     (puts (+ "we've got " (data length)))
+     data)
 
 ;; perform a dns lookup
 ;; ex: /dns/programming.nu

@@ -1,8 +1,8 @@
 
+#import "NunjaMain.h"
 #import "NunjaDelegate.h"
 #import "NunjaRequestRouter.h"
 #import "NunjaRequestHandler.h"
-#import "Nunja.h"
 
 @implementation NunjaDelegate
 

@@ -1,9 +1,20 @@
+#import "NunjaMain.h"
 #import "NunjaRequest.h"
-#import "Nunja.h"
 #import <Nu/Nu.h>
 
 #include <netdb.h>
 #include <evdns.h>
+
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/queue.h>
+
+#include <event.h>
+#include <evhttp.h>
+
+
+void nunja_response_helper(struct evhttp_request *req, int code, NSString *message, NSData *data);
+NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
 
 @interface NSString (Helpers)
 - (NSDictionary *) urlQueryDictionary;
@@ -212,7 +223,16 @@ void nunja_response_helper(struct evhttp_request *req, int code, NSString *messa
 		NSLog(@"FATAL: failed to create response buffer");
 		assert(0);
 	}
-    evbuffer_add(buf, [data bytes], [data length]);
+	if (req->type != EVHTTP_REQ_HEAD) {
+		int result = evbuffer_add(buf, [data bytes], [data length]);
+		if (result == -1) {
+			NSLog(@"WARNING: failed to write %d bytes to response buffer", [data length]);
+		}
+	} else {
+		char buffer[100];
+		sprintf(buffer, "%d", (int) [data length]);
+		evhttp_add_header(req->output_headers, "Content-Length", buffer);
+	}
     evhttp_send_reply(req, code, [message cStringUsingEncoding:NSUTF8StringEncoding], buf);
     evbuffer_free(buf);
 }

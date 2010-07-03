@@ -1,5 +1,5 @@
 
-#import "Nunja.h"
+#import "NunjaMain.h"
 #import "NunjaRequest.h"
 
 @interface NunjaRequestHandler : NSObject {

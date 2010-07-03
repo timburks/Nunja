@@ -27,7 +27,7 @@ limitations under the License.
 #include <string.h>
 
 #import <Foundation/Foundation.h>
-#import "Nunja.h"
+#import "NunjaMain.h"
 
 // http://www.netzmafia.de/skripten/unix/linux-daemon-howto.html
 

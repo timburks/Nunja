@@ -31,9 +31,11 @@
 #import <Foundation/Foundation.h>
 #import <Nu/Nu.h>
 
-#import "Nunja.h"
+#import "NunjaMain.h"
 #import "NunjaRequest.h"
 #import "NunjaDelegate.h"
+
+void nunja_response_helper(struct evhttp_request *req, int code, NSString *message, NSData *data);
 
 void NunjaInit()
 {

@@ -1,0 +1,487 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2270FAF811DEF61000D8889A /* NunjaRequestRouter.h in Headers */ = {isa = PBXBuildFile; fileRef = 229C4D4811DEF19300B195E7 /* NunjaRequestRouter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2270FAF911DEF61000D8889A /* NunjaRequestHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 229C4D4611DEF19300B195E7 /* NunjaRequestHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2270FAFA11DEF61000D8889A /* NunjaRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 229C4D4411DEF19300B195E7 /* NunjaRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2270FAFB11DEF61000D8889A /* NunjaMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 229C4D4311DEF19300B195E7 /* NunjaMain.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2270FAFC11DEF61000D8889A /* NunjaDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 229C4D4111DEF19300B195E7 /* NunjaDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2270FAFD11DEF61000D8889A /* Nunja.h in Headers */ = {isa = PBXBuildFile; fileRef = 229C4D3E11DEF19300B195E7 /* Nunja.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2270FAFE11DEF61000D8889A /* NSFileManager_Nunja.h in Headers */ = {isa = PBXBuildFile; fileRef = 229C4D3C11DEF19300B195E7 /* NSFileManager_Nunja.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2270FB0311DEF62500D8889A /* NunjaRequestRouter.m in Sources */ = {isa = PBXBuildFile; fileRef = 229C4D4911DEF19300B195E7 /* NunjaRequestRouter.m */; };
+		2270FB0411DEF62500D8889A /* NunjaRequestHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 229C4D4711DEF19300B195E7 /* NunjaRequestHandler.m */; };
+		2270FB0511DEF62500D8889A /* NunjaRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 229C4D4511DEF19300B195E7 /* NunjaRequest.m */; };
+		2270FB0611DEF62500D8889A /* NunjaDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 229C4D4211DEF19300B195E7 /* NunjaDelegate.m */; };
+		2270FB0711DEF62500D8889A /* Nunja_daemonize.m in Sources */ = {isa = PBXBuildFile; fileRef = 229C4D4011DEF19300B195E7 /* Nunja_daemonize.m */; };
+		2270FB0811DEF62500D8889A /* Nunja.m in Sources */ = {isa = PBXBuildFile; fileRef = 229C4D3F11DEF19300B195E7 /* Nunja.m */; };
+		2270FB0911DEF62500D8889A /* NSFileManager_Nunja.m in Sources */ = {isa = PBXBuildFile; fileRef = 229C4D3D11DEF19300B195E7 /* NSFileManager_Nunja.m */; };
+		2270FB1E11DEF6AB00D8889A /* Nu.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22C53C4811D9B1FA003626DF /* Nu.framework */; };
+		2270FB2211DEF6E000D8889A /* libevent.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 22C53C4111D9B1CE003626DF /* libevent.a */; };
+		2270FB2A11DEF70000D8889A /* Nunja.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2270FAF111DEF5E200D8889A /* Nunja.framework */; };
+		2270FB7111DEF8C700D8889A /* nunja.nu in Resources */ = {isa = PBXBuildFile; fileRef = 2270FB6F11DEF8C700D8889A /* nunja.nu */; };
+		229C4E1011DEF4C500B195E7 /* Nu.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22C53C4811D9B1FA003626DF /* Nu.framework */; };
+		22C53CE511D9B261003626DF /* nunjad.m in Sources */ = {isa = PBXBuildFile; fileRef = 22C53CE211D9B256003626DF /* nunjad.m */; };
+		22C53D3E11D9B4A8003626DF /* NuHTTPHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22C53D3D11D9B4A8003626DF /* NuHTTPHelpers.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2270FB2811DEF6FC00D8889A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2270FAF011DEF5E200D8889A;
+			remoteInfo = Nunja;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2270FAF111DEF5E200D8889A /* Nunja.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Nunja.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2270FAF211DEF5E200D8889A /* Nunja-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Nunja-Info.plist"; sourceTree = "<group>"; };
+		2270FB6F11DEF8C700D8889A /* nunja.nu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nunja.nu; sourceTree = "<group>"; };
+		229C4D3C11DEF19300B195E7 /* NSFileManager_Nunja.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileManager_Nunja.h; sourceTree = "<group>"; };
+		229C4D3D11DEF19300B195E7 /* NSFileManager_Nunja.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFileManager_Nunja.m; sourceTree = "<group>"; };
+		229C4D3E11DEF19300B195E7 /* Nunja.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Nunja.h; sourceTree = "<group>"; };
+		229C4D3F11DEF19300B195E7 /* Nunja.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Nunja.m; sourceTree = "<group>"; };
+		229C4D4011DEF19300B195E7 /* Nunja_daemonize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Nunja_daemonize.m; sourceTree = "<group>"; };
+		229C4D4111DEF19300B195E7 /* NunjaDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NunjaDelegate.h; sourceTree = "<group>"; };
+		229C4D4211DEF19300B195E7 /* NunjaDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NunjaDelegate.m; sourceTree = "<group>"; };
+		229C4D4311DEF19300B195E7 /* NunjaMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NunjaMain.h; sourceTree = "<group>"; };
+		229C4D4411DEF19300B195E7 /* NunjaRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NunjaRequest.h; sourceTree = "<group>"; };
+		229C4D4511DEF19300B195E7 /* NunjaRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NunjaRequest.m; sourceTree = "<group>"; };
+		229C4D4611DEF19300B195E7 /* NunjaRequestHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NunjaRequestHandler.h; sourceTree = "<group>"; };
+		229C4D4711DEF19300B195E7 /* NunjaRequestHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NunjaRequestHandler.m; sourceTree = "<group>"; };
+		229C4D4811DEF19300B195E7 /* NunjaRequestRouter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NunjaRequestRouter.h; sourceTree = "<group>"; };
+		229C4D4911DEF19300B195E7 /* NunjaRequestRouter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NunjaRequestRouter.m; sourceTree = "<group>"; };
+		22C53C4111D9B1CE003626DF /* libevent.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libevent.a; path = /usr/local/lib/libevent.a; sourceTree = "<absolute>"; };
+		22C53C4811D9B1FA003626DF /* Nu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nu.framework; path = /Library/Frameworks/Nu.framework; sourceTree = "<absolute>"; };
+		22C53CCD11D9B21B003626DF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		22C53CDE11D9B242003626DF /* nunjad */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nunjad; sourceTree = BUILT_PRODUCTS_DIR; };
+		22C53CE211D9B256003626DF /* nunjad.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = nunjad.m; sourceTree = "<group>"; };
+		22C53D3D11D9B4A8003626DF /* NuHTTPHelpers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NuHTTPHelpers.framework; path = /Library/Frameworks/NuHTTPHelpers.framework; sourceTree = "<absolute>"; };
+		32DBCF5E0370ADEE00C91783 /* Nunja_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Nunja_Prefix.pch; sourceTree = "<group>"; };
+		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2270FAEF11DEF5E200D8889A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2270FB2211DEF6E000D8889A /* libevent.a in Frameworks */,
+				2270FB1E11DEF6AB00D8889A /* Nu.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		22C53CDC11D9B242003626DF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				229C4E1011DEF4C500B195E7 /* Nu.framework in Frameworks */,
+				22C53D3E11D9B4A8003626DF /* NuHTTPHelpers.framework in Frameworks */,
+				2270FB2A11DEF70000D8889A /* Nunja.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				22C53CDE11D9B242003626DF /* nunjad */,
+				2270FAF111DEF5E200D8889A /* Nunja.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* Nunja */ = {
+			isa = PBXGroup;
+			children = (
+				2270FB6D11DEF8C700D8889A /* nu */,
+				229C4D3B11DEF19300B195E7 /* objc */,
+				32C88DFF0371C24200C91783 /* Other Sources */,
+				089C1665FE841158C02AAC07 /* Resources */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DFFF38A50411DB9C8B /* Products */,
+				2270FAF211DEF5E200D8889A /* Nunja-Info.plist */,
+			);
+			name = Nunja;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				22C53CCD11D9B21B003626DF /* Foundation.framework */,
+				22C53C4811D9B1FA003626DF /* Nu.framework */,
+				22C53C4111D9B1CE003626DF /* libevent.a */,
+				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
+				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
+				22C53D3D11D9B4A8003626DF /* NuHTTPHelpers.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		2270FB6D11DEF8C700D8889A /* nu */ = {
+			isa = PBXGroup;
+			children = (
+				2270FB6F11DEF8C700D8889A /* nunja.nu */,
+			);
+			name = nu;
+			path = ../../nu;
+			sourceTree = SOURCE_ROOT;
+		};
+		229C4D3B11DEF19300B195E7 /* objc */ = {
+			isa = PBXGroup;
+			children = (
+				229C4D3C11DEF19300B195E7 /* NSFileManager_Nunja.h */,
+				229C4D3D11DEF19300B195E7 /* NSFileManager_Nunja.m */,
+				229C4D3E11DEF19300B195E7 /* Nunja.h */,
+				229C4D3F11DEF19300B195E7 /* Nunja.m */,
+				229C4D4011DEF19300B195E7 /* Nunja_daemonize.m */,
+				229C4D4111DEF19300B195E7 /* NunjaDelegate.h */,
+				229C4D4211DEF19300B195E7 /* NunjaDelegate.m */,
+				229C4D4311DEF19300B195E7 /* NunjaMain.h */,
+				229C4D4411DEF19300B195E7 /* NunjaRequest.h */,
+				229C4D4511DEF19300B195E7 /* NunjaRequest.m */,
+				229C4D4611DEF19300B195E7 /* NunjaRequestHandler.h */,
+				229C4D4711DEF19300B195E7 /* NunjaRequestHandler.m */,
+				229C4D4811DEF19300B195E7 /* NunjaRequestRouter.h */,
+				229C4D4911DEF19300B195E7 /* NunjaRequestRouter.m */,
+			);
+			name = objc;
+			path = ../../objc;
+			sourceTree = SOURCE_ROOT;
+		};
+		32C88DFF0371C24200C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				22C53CE211D9B256003626DF /* nunjad.m */,
+				32DBCF5E0370ADEE00C91783 /* Nunja_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		2270FAEC11DEF5E200D8889A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2270FAF811DEF61000D8889A /* NunjaRequestRouter.h in Headers */,
+				2270FAF911DEF61000D8889A /* NunjaRequestHandler.h in Headers */,
+				2270FAFA11DEF61000D8889A /* NunjaRequest.h in Headers */,
+				2270FAFB11DEF61000D8889A /* NunjaMain.h in Headers */,
+				2270FAFC11DEF61000D8889A /* NunjaDelegate.h in Headers */,
+				2270FAFD11DEF61000D8889A /* Nunja.h in Headers */,
+				2270FAFE11DEF61000D8889A /* NSFileManager_Nunja.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		2270FAF011DEF5E200D8889A /* Nunja */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2270FAF611DEF5E200D8889A /* Build configuration list for PBXNativeTarget "Nunja" */;
+			buildPhases = (
+				2270FAED11DEF5E200D8889A /* Resources */,
+				2270FAEC11DEF5E200D8889A /* Headers */,
+				2270FAEE11DEF5E200D8889A /* Sources */,
+				2270FAEF11DEF5E200D8889A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Nunja;
+			productName = Nunja;
+			productReference = 2270FAF111DEF5E200D8889A /* Nunja.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		22C53CDD11D9B242003626DF /* nunjad */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 22C53CE411D9B256003626DF /* Build configuration list for PBXNativeTarget "nunjad" */;
+			buildPhases = (
+				22C53CDB11D9B242003626DF /* Sources */,
+				22C53CDC11D9B242003626DF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2270FB2911DEF6FC00D8889A /* PBXTargetDependency */,
+			);
+			name = nunjad;
+			productName = nunjad;
+			productReference = 22C53CDE11D9B242003626DF /* nunjad */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "Nunja" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* Nunja */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2270FAF011DEF5E200D8889A /* Nunja */,
+				22C53CDD11D9B242003626DF /* nunjad */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2270FAED11DEF5E200D8889A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2270FB7111DEF8C700D8889A /* nunja.nu in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2270FAEE11DEF5E200D8889A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2270FB0311DEF62500D8889A /* NunjaRequestRouter.m in Sources */,
+				2270FB0411DEF62500D8889A /* NunjaRequestHandler.m in Sources */,
+				2270FB0511DEF62500D8889A /* NunjaRequest.m in Sources */,
+				2270FB0611DEF62500D8889A /* NunjaDelegate.m in Sources */,
+				2270FB0711DEF62500D8889A /* Nunja_daemonize.m in Sources */,
+				2270FB0811DEF62500D8889A /* Nunja.m in Sources */,
+				2270FB0911DEF62500D8889A /* NSFileManager_Nunja.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		22C53CDB11D9B242003626DF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				22C53CE511D9B261003626DF /* nunjad.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2270FB2911DEF6FC00D8889A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2270FAF011DEF5E200D8889A /* Nunja */;
+			targetProxy = 2270FB2811DEF6FC00D8889A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		089C1666FE841158C02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C1667FE841158C02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB91B208733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DARWIN;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		1DEB91B308733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = DARWIN;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+		2270FAF411DEF5E200D8889A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Nunja-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Frameworks";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Nunja;
+			};
+			name = Debug;
+		};
+		2270FAF511DEF5E200D8889A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Nunja-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Frameworks";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Nunja;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		22C53CE011D9B242003626DF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = nunjad;
+			};
+			name = Debug;
+		};
+		22C53CE111D9B242003626DF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = nunjad;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "Nunja" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91B208733DA50010E9CD /* Debug */,
+				1DEB91B308733DA50010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2270FAF611DEF5E200D8889A /* Build configuration list for PBXNativeTarget "Nunja" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2270FAF411DEF5E200D8889A /* Debug */,
+				2270FAF511DEF5E200D8889A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		22C53CE411D9B256003626DF /* Build configuration list for PBXNativeTarget "nunjad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				22C53CE011D9B242003626DF /* Debug */,
+				22C53CE111D9B242003626DF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

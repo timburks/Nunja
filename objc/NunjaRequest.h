@@ -1,14 +1,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/queue.h>
-#include <event.h>
-#include <evhttp.h>
-
-void nunja_response_helper(struct evhttp_request *req, int code, NSString *message, NSData *data);
-NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
 
 @class Nunja;
 
