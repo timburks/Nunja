@@ -101,8 +101,15 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     return evhttp_bind_socket(httpd, [address cStringUsingEncoding:NSUTF8StringEncoding], port);
 }
 
+static void sig_pipe(int signo) {
+	NSLog(@"SIGPIPE: lost connection during write. (signal %d)", signo);
+}
+
 - (void) run
 {
+	if (signal(SIGPIPE, sig_pipe) == SIG_ERR) {
+		NSLog(@"failed to setup SIGPIPE handler.");
+	}
     event_base_dispatch(event_base);
 }
 

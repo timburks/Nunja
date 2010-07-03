@@ -234,7 +234,12 @@ END forKey:"BODY")
                         then 1
                         else (size doubleValue)))
      (puts (+ "requesting " megabytes))
-     (set data ((NSData dataWithSize:(* megabytes 1024 1024)) copy))
+     (if (> megabytes 256)
+         (then
+              (puts "too large. sending 1 byte instead.")
+              (set data (NSData dataWithSize:1)))
+         (else
+              (set data (NSData dataWithSize:(* megabytes 1024 1024)))))
      (puts (+ "we've got " (data length)))
      data)
 
