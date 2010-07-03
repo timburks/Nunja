@@ -319,6 +319,9 @@ END forKey:"BODY")
                   (+ key ":" (q key)))))
       (a componentsJoinedByString:","))
 
+(get "/foo/rest:"
+     ((REQUEST bindings) rest:))
+
 (get-404
         "Resource Not Found: #{(REQUEST path)}")
 
