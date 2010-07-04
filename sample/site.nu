@@ -332,3 +332,5 @@ END forKey:"BODY")
         "Resource Not Found: #{(REQUEST path)}")
 
 
+(get "/aaa:" 
+       "You asked for #{((REQUEST bindings) aaa:)}")

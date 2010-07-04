@@ -18,17 +18,17 @@ NSString *spaces(int n) {
 {
     NunjaRequestRouter *router = [[[self alloc] init] autorelease];
     router->contents = [[NSMutableDictionary alloc] init];
-    router->token = [token retain];
+    router->tokens = [[NSMutableSet setWithObject:token] retain];
     return router;
 }
 
-- (id) token {
-	return token;
+- (NSMutableSet *) tokens {
+	return tokens;
 }
 
 - (void) dump:(int) level
 {
-    NSLog(@"%@%@\t%@", spaces(level), self->token, self->handler);
+    NSLog(@"%@%@\t%@", spaces(level), self->tokens, self->handler);
     id keys = [self->contents allKeys];
     for (int i = 0; i < [keys count]; i++) {
         id key = [keys objectAtIndex:i];
@@ -51,7 +51,11 @@ NSString *spaces(int n) {
             return response;
         }
         else if (child = [self->contents objectForKey:@":"]) {
-            [[request bindings] setObject:key forKey:[[child token] substringToIndex:([[child token] length]-1)]];
+			id childTokens = [[child tokens] allObjects];
+			for (int i = 0; i < [childTokens count]; i++) {
+				id childToken = [childTokens objectAtIndex:i];
+				[[request bindings] setObject:key forKey:[childToken substringToIndex:([childToken length]-1)]];
+			}
             return [child routeRequest:request parts:parts level:(level + 1)];
         }
         else {
@@ -71,6 +75,8 @@ NSString *spaces(int n) {
         id child = [self->contents objectForKey:(key_is_wildcard ? @":" : key)];
         if (!child) {
             child = [NunjaRequestRouter routerWithToken:key];
+		} else {
+			[[child tokens] addObject:key];
 		}
 		if (([key length] > 0) && (([key characterAtIndex:0] == ':') || ([key characterAtIndex:([key length] -1)] == ':'))) {
 			[self->contents setObject:child forKey:@":"];
