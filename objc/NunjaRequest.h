@@ -25,6 +25,7 @@
 - (NSString *) path;
 - (NSDictionary *) parameters;
 - (NSDictionary *) query;
+- (NSDictionary *) post;
 - (id) bindings;
 - (void) setBindings:(id) bindings;
 - (NSData *) body;

@@ -98,6 +98,19 @@ NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
     return _query ? _query : [NSDictionary dictionary];
 }
 
+- (NSDictionary *) post
+{
+	NSData *bodyData = [self body];
+	if (!bodyData) 
+		return [NSDictionary dictionary];
+	NSString *bodyString = [[[NSString alloc]
+							 initWithData:bodyData encoding:NSUTF8StringEncoding]
+							autorelease];
+	if (!bodyString)
+		return [NSDictionary dictionary];
+	return [bodyString urlQueryDictionary];
+}
+
 - (id) bindings
 {
     return _bindings ? _bindings : [NSDictionary dictionary];
