@@ -299,11 +299,11 @@ void nunja_response_helper(struct evhttp_request *req, int code, NSString *messa
     [self setValue:content_type forResponseHeader:@"Content-Type"];
 }
 
-- (int) redirectResponseToLocation:(NSString *) location
+- (NSString *) redirectResponseToLocation:(NSString *) location
 {
     [self setValue:location forResponseHeader:@"Location"];
     [self respondWithCode:303 message:@"redirecting" string:@"redirecting"];
-    return YES;
+    return [NSString stringWithFormat:@"redirecting to %@", location];
 }
 
 @end

@@ -46,7 +46,7 @@
 - (BOOL) respondWithCode:(int) code message:(NSString *) message data:(NSData *) data;
 - (NSDictionary *) cookies;
 - (void) setContentType:(NSString *)content_type;
-- (int) redirectResponseToLocation:(NSString *) location;
+- (NSString *) redirectResponseToLocation:(NSString *) location;
 
 
 @end

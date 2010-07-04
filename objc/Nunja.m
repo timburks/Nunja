@@ -364,6 +364,7 @@ int NunjaMain(int argc, const char *argv[], NSString *NunjaDelegateClassName)
 		[delegate dump];
 	}
 	[nunja setDelegate:delegate];
+	NSLog(@"Nunjad is running on port %d", port);
 	[nunja run];
 	
     [pool drain];
