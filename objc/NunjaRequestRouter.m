@@ -28,7 +28,7 @@ NSString *spaces(int n) {
 
 - (void) dump:(int) level
 {
-    NSLog(@"%@%@\t%@", spaces(level), self->tokens, self->handler);
+    NSLog(@"%@%@\t%@", spaces(level), [[self->tokens allObjects] componentsJoinedByString:@","], self->handler);
     id keys = [self->contents allKeys];
     for (int i = 0; i < [keys count]; i++) {
         id key = [keys objectAtIndex:i];
