@@ -28,6 +28,8 @@
 #include <evdns.h>
 #include <arpa/inet.h> // inet_ntoa 
 
+#include <signal.h> // SIGPIPE
+
 #import <Foundation/Foundation.h>
 #import <Nu/Nu.h>
 
