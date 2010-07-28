@@ -147,6 +147,10 @@ NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
     }
 }
 
+- (NSString *) description {
+	return [NSString stringWithFormat:@"(REQUEST %@ %@)", [self HTTPMethod], [self path]];
+}
+
 - (NSString *) remoteHost
 {
     return [NSString stringWithCString:req->remote_host encoding:NSUTF8StringEncoding];
