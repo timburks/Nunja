@@ -95,6 +95,11 @@ static NunjaDelegate *_sharedDelegate;
             }
             @catch (id exception) {
                 NSLog(@"Nunja handler exception: %@ %@", [exception description], [request description]);
+                if (YES) {                        // DEBUGGING
+					[request setContentType:@"text/plain"];
+                    [request respondWithString:[exception description]];
+                    handled = YES;
+                }
             }
         }
     }
