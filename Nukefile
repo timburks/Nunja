@@ -20,7 +20,7 @@
 (set @framework "Nunja")
 (set @framework_identifier "nu.programming.nunja")
 (set @framework_creator_code "????")
-;(set @framework_extra_install (do () (SH "sudo cp nunjad /usr/local/bin")))
+(set @framework_extra_install (do () (SH "sudo cp nunjad /usr/local/bin")))
 
 (ifDarwin
          (set @public_headers (filelist "^objc/.*\.h$")))
