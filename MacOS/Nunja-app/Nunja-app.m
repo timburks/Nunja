@@ -9,7 +9,7 @@
 
 - (void) nunjaDidFinishLaunching {
 	[self addHandlerWithHTTPMethod:@"GET"
-							  path:@"/"
+							  path:@"/hello"
 							 block:^(NunjaRequest *REQUEST) {
 								 NSMutableString *result = [NSMutableString string];
 								 [result appendString:@"Hello.\n"];
@@ -30,6 +30,16 @@
 								 [REQUEST setContentType:@"text/plain"];
 								 return result;
 							 }];
+	
+	[self addHandlerWithHTTPMethod:@"GET"
+							  path:@"/pwd"
+							 block:^(NunjaRequest *REQUEST) {
+								 NSMutableString *result = [NSMutableString string];
+								 [result appendString:[[NSFileManager defaultManager] currentDirectoryPath]];
+								 [REQUEST setContentType:@"text/plain"];
+								 return result;
+							 }];
+	
 }
 @end
 

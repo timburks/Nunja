@@ -8,12 +8,38 @@
 
 /* Begin PBXBuildFile section */
 		2270FBAF11DEFA6300D8889A /* Nunja.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2270FBAE11DEFA6300D8889A /* Nunja.framework */; };
+		2280BE9812344D9100280D4C /* Nunja-app.m in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* Nunja-app.m */; };
+		2280BE9A12344E0C00280D4C /* favicon.ico in Copy Public Files */ = {isa = PBXBuildFile; fileRef = 2280BE9512344D7600280D4C /* favicon.ico */; };
+		2280BE9F12344E2B00280D4C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB779EFE84155DC02AAC07 /* Foundation.framework */; };
+		2280BF1F12344E2D00280D4C /* Nunja.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2270FBAE11DEFA6300D8889A /* Nunja.framework */; };
+		2280BF4412344EB600280D4C /* site.nu in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2280BE9312344D5500280D4C /* site.nu */; };
 		8DD76F9A0486AA7600D96B5E /* Nunja-app.m in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* Nunja-app.m */; settings = {ATTRIBUTES = (); }; };
 		8DD76F9C0486AA7600D96B5E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB779EFE84155DC02AAC07 /* Foundation.framework */; };
 		8DD76F9F0486AA7600D96B5E /* Nunja-app.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6859EA3029092ED04C91782 /* Nunja-app.1 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		2280BF4212344E3500280D4C /* Copy Public Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = public;
+			dstSubfolderSpec = 1;
+			files = (
+				2280BE9A12344E0C00280D4C /* favicon.ico in Copy Public Files */,
+			);
+			name = "Copy Public Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2280BF4B12344ECE00280D4C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 1;
+			files = (
+				2280BF4412344EB600280D4C /* site.nu in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76F9E0486AA7600D96B5E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 8;
@@ -30,12 +56,25 @@
 		08FB7796FE84155DC02AAC07 /* Nunja-app.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Nunja-app.m"; sourceTree = "<group>"; };
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		2270FBAE11DEFA6300D8889A /* Nunja.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nunja.framework; path = Library/Frameworks/Nunja.framework; sourceTree = SDKROOT; };
+		2280BE8D123448D800280D4C /* Nunja.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nunja.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2280BE8F123448D800280D4C /* Nunja-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Nunja-Info.plist"; sourceTree = "<group>"; };
+		2280BE9312344D5500280D4C /* site.nu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = site.nu; sourceTree = "<group>"; };
+		2280BE9512344D7600280D4C /* favicon.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = favicon.ico; sourceTree = "<group>"; };
 		32A70AAB03705E1F00C91783 /* Nunja-app_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Nunja-app_Prefix.pch"; sourceTree = "<group>"; };
 		8DD76FA10486AA7600D96B5E /* Nunja-app */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Nunja-app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6859EA3029092ED04C91782 /* Nunja-app.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = "Nunja-app.1"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2280BE8B123448D800280D4C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2280BF1F12344E2D00280D4C /* Nunja.framework in Frameworks */,
+				2280BE9F12344E2B00280D4C /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76F9B0486AA7600D96B5E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -51,10 +90,13 @@
 		08FB7794FE84155DC02AAC07 /* Nunja-app */ = {
 			isa = PBXGroup;
 			children = (
+				2280BE9412344D7600280D4C /* public */,
+				2280BE9312344D5500280D4C /* site.nu */,
 				08FB7795FE84155DC02AAC07 /* Source */,
 				C6859EA2029092E104C91782 /* Documentation */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
+				2280BE8F123448D800280D4C /* Nunja-Info.plist */,
 			);
 			name = "Nunja-app";
 			sourceTree = "<group>";
@@ -81,8 +123,17 @@
 			isa = PBXGroup;
 			children = (
 				8DD76FA10486AA7600D96B5E /* Nunja-app */,
+				2280BE8D123448D800280D4C /* Nunja.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2280BE9412344D7600280D4C /* public */ = {
+			isa = PBXGroup;
+			children = (
+				2280BE9512344D7600280D4C /* favicon.ico */,
+			);
+			path = public;
 			sourceTree = "<group>";
 		};
 		C6859EA2029092E104C91782 /* Documentation */ = {
@@ -96,6 +147,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2280BE8C123448D800280D4C /* Nunja */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2280BE92123448D800280D4C /* Build configuration list for PBXNativeTarget "Nunja" */;
+			buildPhases = (
+				2280BE8A123448D800280D4C /* Sources */,
+				2280BE8B123448D800280D4C /* Frameworks */,
+				2280BF4212344E3500280D4C /* Copy Public Files */,
+				2280BF4B12344ECE00280D4C /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Nunja;
+			productName = Nunja;
+			productReference = 2280BE8D123448D800280D4C /* Nunja.app */;
+			productType = "com.apple.product-type.application";
+		};
 		8DD76F960486AA7600D96B5E /* Nunja-app */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB927408733DD40010E9CD /* Build configuration list for PBXNativeTarget "Nunja-app" */;
@@ -127,11 +196,20 @@
 			projectRoot = "";
 			targets = (
 				8DD76F960486AA7600D96B5E /* Nunja-app */,
+				2280BE8C123448D800280D4C /* Nunja */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2280BE8A123448D800280D4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2280BE9812344D9100280D4C /* Nunja-app.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76F990486AA7600D96B5E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -200,6 +278,54 @@
 			};
 			name = Release;
 		};
+		2280BE90123448D800280D4C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Nunja-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Nunja;
+			};
+			name = Debug;
+		};
+		2280BE91123448D800280D4C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Nunja-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Nunja;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -217,6 +343,15 @@
 			buildConfigurations = (
 				1DEB927908733DD40010E9CD /* Debug */,
 				1DEB927A08733DD40010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2280BE92123448D800280D4C /* Build configuration list for PBXNativeTarget "Nunja" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2280BE90123448D800280D4C /* Debug */,
+				2280BE91123448D800280D4C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

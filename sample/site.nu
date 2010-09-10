@@ -331,6 +331,8 @@ END forKey:"BODY")
 (get-404
         "Resource Not Found: #{(REQUEST path)}")
 
-
-(get "/aaa:" 
-       "You asked for #{((REQUEST bindings) aaa:)}")
+(get "/ls"
+     (set path ((REQUEST query) path:))
+     (unless path (set path "."))
+     (REQUEST setContentType:"text/plain")
+     (((NSFileManager defaultManager) contentsOfDirectoryAtPath:path error:nil) description))
