@@ -21,17 +21,18 @@
 
 @class NunjaRequest;
 
-@protocol NunjaDelegateProtocol
+@protocol NunjaDelegate
 // Override this to perform Objective-C setup of your Nunja.
-- (void) nunjaDidFinishLaunching;
+- (void) applicationDidFinishLaunching;
 
-// Call this within nunjaDidFinishLaunching to add a handler.
+// Call this within applicationDidFinishLaunching to add a handler.
+// The block argument can be a Nu or Objective-C block.
 - (void) addHandlerWithHTTPMethod:(NSString *)httpMethod path:(NSString *)path block:(id)block;
 
-// Call this within nunjaDidFinishLaunching to set the 404 handler.
+// Call this within applicationDidFinishLaunching to set the 404 handler.
 - (void) setDefaultHandlerWithBlock:(id) block;
 
-// Override this to add your own custom request processing. You probably won't need this.
+// Handle a request. You probably won't need this if you use the NunjaDefaultDelegate.
 - (void) handleRequest:(NunjaRequest *)request;
 @end
 
@@ -50,8 +51,8 @@
 + (NSString *) mimeTypeForFileWithName:(NSString *) filename;
 
 // The delegate performs all request handling.
-- (void) setDelegate:(id<NunjaDelegateProtocol>) d;
-- (id<NunjaDelegateProtocol>) delegate;
+- (void) setDelegate:(id<NunjaDelegate>) d;
+- (id<NunjaDelegate>) delegate;
 
 // Bind the server to a specified address and port.
 - (int) bindToAddress:(NSString *) address port:(int) port;
@@ -62,5 +63,6 @@
 @end
 
 
-// Run Nunja. Pass nil for NunjaDelegateClassName to set up your site with Nu (site.nu).
+// Run Nunja. Pass nil for NunjaDelegateClassName to use the default delegate.
+// If it exists, a file named "site.nu" will be read and run to configure the delegate.
 int NunjaMain(int argc, const char *argv[], NSString *NunjaDelegateClassName);

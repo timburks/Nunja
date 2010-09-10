@@ -2,14 +2,14 @@
 #import "Nunja/Nunja.h"
 
 
-@interface MyNunjaDelegate : NunjaDelegate 
+@interface MyNunjaDelegate : NunjaDefaultDelegate 
 {
 }
 @end
 
 @implementation MyNunjaDelegate
 
-- (void) nunjaDidFinishLaunching {	
+- (void) applicationDidFinishLaunching {	
 #ifdef DARWIN
 	[self addHandlerWithHTTPMethod:@"GET"
 							  path:@"/block/me:"

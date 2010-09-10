@@ -1,13 +1,13 @@
 #import <Nunja/Nunja.h>
 
-@interface ServerDelegate : NunjaDelegate 
+@interface ServerDelegate : NunjaDefaultDelegate 
 {
 }
 @end
 
 @implementation ServerDelegate
 
-- (void) nunjaDidFinishLaunching {
+- (void) applicationDidFinishLaunching {
 	[self addHandlerWithHTTPMethod:@"GET"
 							  path:@"/hello"
 							 block:^(NunjaRequest *REQUEST) {

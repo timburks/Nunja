@@ -3,14 +3,14 @@
 #import "NunjaRequestRouter.h"
 #import "NunjaRequest.h"
 
-NSString *spaces(int n) {
-	NSMutableString *result = [NSMutableString string];
-	for (int i = 0; i < n; i++) {
-		[result appendString:@" "];
-	}
-	return result;
+NSString *spaces(int n)
+{
+    NSMutableString *result = [NSMutableString string];
+    for (int i = 0; i < n; i++) {
+        [result appendString:@" "];
+    }
+    return result;
 }
-
 
 @implementation NunjaRequestRouter
 
@@ -22,19 +22,36 @@ NSString *spaces(int n) {
     return router;
 }
 
-- (NSMutableSet *) tokens {
-	return tokens;
+- (NSMutableSet *) tokens
+{
+    return tokens;
 }
 
-- (void) dump:(int) level
+- (NSString *) descriptionWithLevel:(int) level
 {
-    NSLog(@"%@%@\t%@", spaces(level), [[self->tokens allObjects] componentsJoinedByString:@","], self->handler);
-    id keys = [self->contents allKeys];
-    for (int i = 0; i < [keys count]; i++) {
+	NSMutableString *result;
+	if (level >= 2) {
+		result = [NSMutableString stringWithFormat:@"%@/%@%@\n",
+				  spaces(level),
+				  [[self->tokens allObjects] componentsJoinedByString:@", /"],
+				  self->handler ? @"  " : @" -"];
+	} else {
+		result = [NSMutableString stringWithFormat:@"%@%@\n",
+				  spaces(level),
+				  [[self->tokens allObjects] componentsJoinedByString:@", "]];
+	}
+    id keys = [[self->contents allKeys] sortedArrayUsingSelector:@selector(compare:)];
+	for (int i = 0; i < [keys count]; i++) {
         id key = [keys objectAtIndex:i];
         id value = [self->contents objectForKey:key];
-        [value dump:(level+1)];
+        [result appendString:[value descriptionWithLevel:(level+1)]];
     }
+    return result;
+}
+
+- (NSString *) description
+{
+    return [self descriptionWithLevel:0];
 }
 
 - (id) routeRequest:(NunjaRequest *) request parts:(NSArray *) parts level:(int) level
@@ -51,11 +68,12 @@ NSString *spaces(int n) {
             return response;
         }
         else if (child = [self->contents objectForKey:@":"]) {
-			id childTokens = [[child tokens] allObjects];
-			for (int i = 0; i < [childTokens count]; i++) {
-				id childToken = [childTokens objectAtIndex:i];
-				[[request bindings] setObject:key forKey:[childToken substringToIndex:([childToken length]-1)]];
-			}
+            id childTokens = [[child tokens] allObjects];
+            for (int i = 0; i < [childTokens count]; i++) {
+                id childToken = [childTokens objectAtIndex:i];
+                [[request bindings] setObject:key
+									   forKey:[childToken substringToIndex:([childToken length]-1)]];
+            }
             return [child routeRequest:request parts:parts level:(level + 1)];
         }
         else {
@@ -75,16 +93,17 @@ NSString *spaces(int n) {
         id child = [self->contents objectForKey:(key_is_wildcard ? @":" : key)];
         if (!child) {
             child = [NunjaRequestRouter routerWithToken:key];
-		} else {
-			[[child tokens] addObject:key];
-		}
-		if (([key length] > 0) && (([key characterAtIndex:0] == ':') || ([key characterAtIndex:([key length] -1)] == ':'))) {
-			[self->contents setObject:child forKey:@":"];
-		}
-		else {
-			[self->contents setObject:child forKey:key];
-		}
-		[child insertHandler:h level:level+1];
+        }
+        else {
+            [[child tokens] addObject:key];
+        }
+        if (([key length] > 0) && ([key characterAtIndex:([key length] -1)] == ':')) {
+            [self->contents setObject:child forKey:@":"];
+        }
+        else {
+            [self->contents setObject:child forKey:key];
+        }
+        [child insertHandler:h level:level+1];
     }
 }
 

@@ -4,11 +4,11 @@
 #import "NunjaRequestRouter.h"
 #import "NunjaRequestHandler.h"
 
-@implementation NunjaDelegate
+@implementation NunjaDefaultDelegate
 
-static NunjaDelegate *_sharedDelegate;
+static NunjaDefaultDelegate *_sharedDelegate;
 
-+ (NunjaDelegate *) sharedDelegate
++ (NunjaDefaultDelegate *) sharedDelegate
 {
     return _sharedDelegate;
 }
@@ -16,16 +16,14 @@ static NunjaDelegate *_sharedDelegate;
 - (id) init
 {
     if (self = [super init]) {
-        self->router = [[NunjaRequestRouter routerWithToken:@""] retain];
+        self->router = [[NunjaRequestRouter routerWithToken:@"SITE"] retain];
     }
     _sharedDelegate = self;
     return self;
 }
 
-- (id) initWithSite:(id) site
+- (void) configureSite:(NSString *) site
 {
-    self = [self init];
-
     id parser = [Nu parser];
 
     // set working directory to site path
@@ -39,8 +37,8 @@ static NunjaDelegate *_sharedDelegate;
     if (sourcecode) {
         [parser parseEval:sourcecode];
     }
-    return self;
 }
+
 
 - (void) setDefaultHandlerWithBlock:(id) block
 {
@@ -62,7 +60,7 @@ static NunjaDelegate *_sharedDelegate;
 
 - (void) dump
 {
-    [self->router dump:0];
+    NSLog(@"Nunja Request Handlers:\n%@", [self->router description]);
 }
 
 - (void) handleRequest:(NunjaRequest *) request
@@ -84,7 +82,7 @@ static NunjaDelegate *_sharedDelegate;
         parts = [parts subarrayWithRange:NSMakeRange(0, [parts count]-1)];
     }
 
-    BOOL handled = NO;                            // [[NunjaCache sharedCache] handleRequest:request];
+    BOOL handled = NO;
 
     if (!handled) {
         NunjaRequestHandler *handler = [router routeRequest:request parts:parts level:0];
@@ -96,7 +94,7 @@ static NunjaDelegate *_sharedDelegate;
             @catch (id exception) {
                 NSLog(@"Nunja handler exception: %@ %@", [exception description], [request description]);
                 if (YES) {                        // DEBUGGING
-					[request setContentType:@"text/plain"];
+                    [request setContentType:@"text/plain"];
                     [request respondWithString:[exception description]];
                     handled = YES;
                 }
@@ -185,7 +183,7 @@ static NunjaDelegate *_sharedDelegate;
 
 }
 
-- (void) nunjaDidFinishLaunching
+- (void) applicationDidFinishLaunching
 {
 
 }

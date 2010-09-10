@@ -54,7 +54,7 @@ BOOL verbose_nunja = NO;
 {
     struct event_base *event_base;
     struct evhttp *httpd;
-    id<NSObject,NunjaDelegateProtocol> delegate;
+    id<NSObject,NunjaDelegate> delegate;
 }
 
 - (id) delegate;
@@ -123,6 +123,9 @@ static void sig_pipe(int signo) {
 
 - (id) delegate
 {
+	if (!delegate) {
+		[self setDelegate:[[[NunjaDefaultDelegate alloc] init] autorelease]];
+	}
     return delegate;
 }
 
@@ -266,8 +269,12 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
 
 @implementation Nunja
 
+static Nunja *sharedNunja = nil;
+
 + (Nunja *) nunja {
-	return [[[ConcreteNunja alloc] init] autorelease];
+	if (!sharedNunja)
+		sharedNunja = [[ConcreteNunja alloc] init];
+	return sharedNunja;
 }
 
 + (void) setVerbose:(BOOL) v
@@ -357,15 +364,16 @@ int NunjaMain(int argc, const char *argv[], NSString *NunjaDelegateClassName)
 	else {
 		[nunja bindToAddress:@"0.0.0.0" port:port];
 	}
-	Class NunjaDelegateClass = NunjaDelegateClassName ?  NSClassFromString(NunjaDelegateClassName) : [NunjaDelegate class];		
-	id delegate = [[[NunjaDelegateClass alloc] initWithSite:site] autorelease];
-	if ([delegate respondsToSelector:@selector(nunjaDidFinishLaunching)]) {
-		[delegate nunjaDidFinishLaunching];
+	Class NunjaDelegateClass = NunjaDelegateClassName ?  NSClassFromString(NunjaDelegateClassName) : [NunjaDefaultDelegate class];		
+	id delegate = [[[NunjaDelegateClass alloc] init] autorelease];
+	[nunja setDelegate:delegate];
+	[delegate configureSite:site];
+	if ([delegate respondsToSelector:@selector(applicationDidFinishLaunching)]) {
+		[delegate applicationDidFinishLaunching];
 	}
 	if ([Nunja verbose]) {
 		[delegate dump];
 	}
-	[nunja setDelegate:delegate];
 	NSLog(@"Nunjad is running on port %d", port);
 	[nunja run];
 	

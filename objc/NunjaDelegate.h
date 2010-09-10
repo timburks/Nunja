@@ -3,13 +3,13 @@
 @class NunjaRequestHandler;
 @class NunjaRequestRouter;
 
-@interface NunjaDelegate : NSObject <NunjaDelegateProtocol>
+@interface NunjaDefaultDelegate : NSObject <NunjaDelegate>
 {
-	NunjaRequestHandler *defaultHandler;
-	NunjaRequestRouter *router;
+    NunjaRequestHandler *defaultHandler;
+    NunjaRequestRouter *router;
 }
 
-- (id) initWithSite:(NSString *) site;
+- (void) configureSite:(NSString *) site;
 
 - (void) addHandler:(NunjaRequestHandler *) handler;
 - (void) addHandlerWithHTTPMethod:(NSString *)httpMethod path:(NSString *)path block:(id)block;
@@ -18,5 +18,3 @@
 - (void) dump;
 
 @end
-
-

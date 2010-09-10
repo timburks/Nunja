@@ -59,25 +59,23 @@
         (result insertString:":" atIndex:(- (result length) 2))
         result))
 
-
-
 ;; Declare a get action.
 (global get (macro get (path *body)
-                 `((NunjaDelegate sharedDelegate)
+                 `(((Nunja nunja) delegate)
                    addHandlerWithHTTPMethod:"GET"
                    path:,path
                    block:(do (REQUEST) ,@*body))))
 
 ;; Declare a post action.
 (global post (macro post (path *body)
-                  `((NunjaDelegate sharedDelegate)
+                  `(((Nunja nunja) delegate)
                     addHandlerWithHTTPMethod:"POST"
                     path:,path
                     block:(do (REQUEST) ,@*body))))
 
 ;; Declare a 404 handler.
 (global get-404 (macro get-404 (*body)
-                     `((NunjaDelegate sharedDelegate)
+                     `(((Nunja nunja) delegate)
                        setDefaultHandlerWithBlock:(do (REQUEST) ,@*body))))
 
 (Nunja setMimeTypes:
