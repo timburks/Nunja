@@ -73,6 +73,20 @@
                     path:,path
                     block:(do (REQUEST) ,@*body))))
 
+;; Declare a put action.
+(global put (macro post (path *body)
+                 `(((Nunja nunja) delegate)
+                   addHandlerWithHTTPMethod:"PUT"
+                   path:,path
+                   block:(do (REQUEST) ,@*body))))
+
+;; Declare a delete action.
+(global delete (macro post (path *body)
+                    `(((Nunja nunja) delegate)
+                      addHandlerWithHTTPMethod:"DELETE"
+                      path:,path
+                      block:(do (REQUEST) ,@*body))))
+
 ;; Declare a 404 handler.
 (global get-404 (macro get-404 (*body)
                      `(((Nunja nunja) delegate)

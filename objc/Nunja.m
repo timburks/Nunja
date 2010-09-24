@@ -19,16 +19,24 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/queue.h>
-#include <event.h>
-#include <evhttp.h>
-#define HTTP_SEEOTHER 303
-#define HTTP_DENIED 403
+
+#include <event2/event.h>
+#include <event2/http.h>
+#include <event2/event_compat.h>
+#include <event2/http_compat.h>
+#include <event2/http_struct.h>
+#include <event2/buffer.h>
+#include <event2/buffer_compat.h>
 
 #include <netdb.h>
-#include <evdns.h>
 #include <arpa/inet.h> // inet_ntoa 
+#include <event2/dns.h>
+#include <event2/dns_compat.h>
 
 #include <signal.h> // SIGPIPE
+
+#define HTTP_SEEOTHER 303
+#define HTTP_DENIED 403
 
 #import <Foundation/Foundation.h>
 #import <Nu/Nu.h>

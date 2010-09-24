@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "Nunja/Nunja.h"
 
-
 @interface MyNunjaDelegate : NunjaDefaultDelegate 
 {
 }

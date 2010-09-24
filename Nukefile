@@ -7,7 +7,7 @@
       ("Darwin"
                (set @arch (list "x86_64" ))
                (set @cflags "-g -std=gnu99 -fobjc-gc -DDARWIN")
-               (set @ldflags  "-framework Foundation -framework Nu -levent -lcrypto"))
+               (set @ldflags  "-framework Foundation -framework Nu -levent -levent_core -lcrypto"))
       ("Linux"
               (set @arch (list "i386"))
               (set gnustep_flags ((NSString stringWithShellCommand:"gnustep-config --objc-flags") chomp))

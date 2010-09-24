@@ -2,16 +2,23 @@
 #import "NunjaRequest.h"
 #import <Nu/Nu.h>
 
-#include <netdb.h>
-#include <evdns.h>
-
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/queue.h>
 
-#include <event.h>
-#include <evhttp.h>
+#include <event2/event.h>
+#include <event2/http.h>
+#include <event2/event_compat.h>
+#include <event2/http_compat.h>
+#include <event2/http_struct.h>
+#include <event2/buffer.h>
+#include <event2/buffer_compat.h>
+#include <event2/event_struct.h>
 
+#include <netdb.h>
+#include <arpa/inet.h>                            // inet_ntoa
+#include <event2/dns.h>
+#include <event2/dns_compat.h>
 
 void nunja_response_helper(struct evhttp_request *req, int code, NSString *message, NSData *data);
 NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
@@ -100,15 +107,15 @@ NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
 
 - (NSDictionary *) post
 {
-	NSData *bodyData = [self body];
-	if (!bodyData) 
-		return [NSDictionary dictionary];
-	NSString *bodyString = [[[NSString alloc]
-							 initWithData:bodyData encoding:NSUTF8StringEncoding]
-							autorelease];
-	if (!bodyString)
-		return [NSDictionary dictionary];
-	return [bodyString urlQueryDictionary];
+    NSData *bodyData = [self body];
+    if (!bodyData)
+        return [NSDictionary dictionary];
+    NSString *bodyString = [[[NSString alloc]
+        initWithData:bodyData encoding:NSUTF8StringEncoding]
+        autorelease];
+    if (!bodyString)
+        return [NSDictionary dictionary];
+    return [bodyString urlQueryDictionary];
 }
 
 - (id) bindings
@@ -125,11 +132,13 @@ NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
 
 - (NSData *) body
 {
-    if (!req->input_buffer->buffer)
+	int length = evbuffer_get_length(req->input_buffer);
+    if (!length)
         return nil;
     else {
-        NSData *data = [NSData dataWithBytes:req->input_buffer->buffer length:req->input_buffer->off];
-		return data;
+		unsigned char *bytes = evbuffer_pullup(req->input_buffer, -1);
+        NSData *data = [NSData dataWithBytes:bytes length:length];
+        return data;
     }
 }
 
@@ -142,13 +151,18 @@ NSDictionary *nunja_request_headers_helper(struct evhttp_request *req);
             return @"POST";
         case EVHTTP_REQ_HEAD:
             return @"HEAD";
+        case EVHTTP_REQ_PUT:
+            return @"PUT";
+        case EVHTTP_REQ_DELETE:
+            return @"DELETE";
         default:
             return @"UNKNOWN";
     }
 }
 
-- (NSString *) description {
-	return [NSString stringWithFormat:@"(REQUEST %@ %@)", [self HTTPMethod], [self path]];
+- (NSString *) description
+{
+    return [NSString stringWithFormat:@"(REQUEST %@ %@)", [self HTTPMethod], [self path]];
 }
 
 - (NSString *) remoteHost
@@ -182,11 +196,11 @@ static NSDictionary *nunja_response_headers_helper(struct evhttp_request *req)
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     struct evkeyval *header;
     TAILQ_FOREACH(header, req->output_headers, next) {
-		NSString *value = [NSString stringWithCString:header->value encoding:NSUTF8StringEncoding];
-		NSString *key = [NSString stringWithCString:header->key encoding:NSUTF8StringEncoding];
-		if (value && key) {
-			[dict setObject:value forKey:key];
-		}
+        NSString *value = [NSString stringWithCString:header->value encoding:NSUTF8StringEncoding];
+        NSString *key = [NSString stringWithCString:header->key encoding:NSUTF8StringEncoding];
+        if (value && key) {
+            [dict setObject:value forKey:key];
+        }
     }
     return dict;
 }
@@ -237,19 +251,20 @@ void nunja_response_helper(struct evhttp_request *req, int code, NSString *messa
     }
     struct evbuffer *buf = evbuffer_new();
     if (buf == NULL) {
-		NSLog(@"FATAL: failed to create response buffer");
-		assert(0);
-	}
-	if (req->type != EVHTTP_REQ_HEAD) {
-		int result = evbuffer_add(buf, [data bytes], [data length]);
-		if (result == -1) {
-			NSLog(@"WARNING: failed to write %d bytes to response buffer", [data length]);
-		}
-	} else {
-		char buffer[100];
-		sprintf(buffer, "%d", (int) [data length]);
-		evhttp_add_header(req->output_headers, "Content-Length", buffer);
-	}
+        NSLog(@"FATAL: failed to create response buffer");
+        assert(0);
+    }
+    if (req->type != EVHTTP_REQ_HEAD) {
+        int result = evbuffer_add(buf, [data bytes], [data length]);
+        if (result == -1) {
+            NSLog(@"WARNING: failed to write %d bytes to response buffer", [data length]);
+        }
+    }
+    else {
+        char buffer[100];
+        sprintf(buffer, "%d", (int) [data length]);
+        evhttp_add_header(req->output_headers, "Content-Length", buffer);
+    }
     evhttp_send_reply(req, code, [message cStringUsingEncoding:NSUTF8StringEncoding], buf);
     evbuffer_free(buf);
 }
