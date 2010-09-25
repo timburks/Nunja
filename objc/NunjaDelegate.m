@@ -85,21 +85,7 @@ static NunjaDefaultDelegate *_sharedDelegate;
     BOOL handled = NO;
 
     if (!handled) {
-        NunjaRequestHandler *handler = [router routeRequest:request parts:parts level:0];
-        if (handler) {
-            @try
-            {
-                handled = [handler handleRequest:request];
-            }
-            @catch (id exception) {
-                NSLog(@"Nunja handler exception: %@ %@", [exception description], [request description]);
-                if (YES) {                        // DEBUGGING
-                    [request setContentType:@"text/plain"];
-                    [request respondWithString:[exception description]];
-                    handled = YES;
-                }
-            }
-        }
+		handled = [router routeAndHandleRequest:request parts:parts level:0];
     }
 
     if (!handled) {                               // does the path end in a '/'? If so, append index.html

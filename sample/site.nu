@@ -336,3 +336,18 @@ END forKey:"BODY")
      (unless path (set path "."))
      (REQUEST setContentType:"text/plain")
      (((NSFileManager defaultManager) contentsOfDirectoryAtPath:path error:nil) description))
+
+(get "/x/y/*z:"
+     (REQUEST setContentType:"text/plain")
+     (puts "aborting")
+     nil)
+
+(get "/x/y/z/*foo:"
+     (REQUEST setContentType:"text/plain")
+     ((REQUEST bindings) *foo:))
+
+(get "/*wildcard:"
+     (REQUEST setContentType:"text/plain")
+     (set wildcard ((REQUEST bindings) *wildcard:))
+     (if (eq wildcard "favicon.ico") (return nil))
+     "whatever")
