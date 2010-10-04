@@ -2,19 +2,19 @@
  @file Nunja.m
  @discussion Core of the Nunja web server.
  @copyright Copyright (c) 2008 Neon Design Technology, Inc.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- */
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -29,11 +29,11 @@
 #include <event2/buffer_compat.h>
 
 #include <netdb.h>
-#include <arpa/inet.h> // inet_ntoa 
+#include <arpa/inet.h>                            // inet_ntoa
 #include <event2/dns.h>
 #include <event2/dns_compat.h>
 
-#include <signal.h> // SIGPIPE
+#include <signal.h>                               // SIGPIPE
 
 #define HTTP_SEEOTHER 303
 #define HTTP_DENIED 403
@@ -70,7 +70,6 @@ BOOL verbose_nunja = NO;
 
 @implementation ConcreteNunja
 
-
 + (void) load
 {
     NunjaInit();
@@ -89,9 +88,9 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     }
     else {
         nunja_response_helper(req, HTTP_OK, @"OK",
-							  [[NSString stringWithFormat:@"Please set the Nunja delegate.<br/>If you are running nunjad, use the '-s' option to specify a site.<br/>\nRequest: %s\n",
-								evhttp_request_uri(req)]
-							   dataUsingEncoding:NSUTF8StringEncoding]);
+            [[NSString stringWithFormat:@"Please set the Nunja delegate.<br/>If you are running nunjad, use the '-s' option to specify a site.<br/>\nRequest: %s\n",
+            evhttp_request_uri(req)]
+            dataUsingEncoding:NSUTF8StringEncoding]);
     }
 }
 
@@ -111,15 +110,16 @@ static void nunja_request_handler(struct evhttp_request *req, void *nunja_pointe
     return evhttp_bind_socket(httpd, [address cStringUsingEncoding:NSUTF8StringEncoding], port);
 }
 
-static void sig_pipe(int signo) {
-	NSLog(@"SIGPIPE: lost connection during write. (signal %d)", signo);
+static void sig_pipe(int signo)
+{
+    NSLog(@"SIGPIPE: lost connection during write. (signal %d)", signo);
 }
 
 - (void) run
 {
-	if (signal(SIGPIPE, sig_pipe) == SIG_ERR) {
-		NSLog(@"failed to setup SIGPIPE handler.");
-	}
+    if (signal(SIGPIPE, sig_pipe) == SIG_ERR) {
+        NSLog(@"failed to setup SIGPIPE handler.");
+    }
     event_base_dispatch(event_base);
 }
 
@@ -131,9 +131,9 @@ static void sig_pipe(int signo) {
 
 - (id) delegate
 {
-	if (!delegate) {
-		[self setDelegate:[[[NunjaDefaultDelegate alloc] init] autorelease]];
-	}
+    if (!delegate) {
+        [self setDelegate:[[[NunjaDefaultDelegate alloc] init] autorelease]];
+    }
     return delegate;
 }
 
@@ -266,7 +266,7 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Content-Length", [[NSString stringWithFormat:@"%d", [data length]] cStringUsingEncoding:NSUTF8StringEncoding]);
     evhttp_add_header(req->output_headers, "Content-Type", "application/x-www-form-urlencoded");
     evbuffer_add(req->output_buffer, [data bytes], [data length]);
-	
+
     // give ownership of the request to the connection
     if (evhttp_make_request(evcon, req, EVHTTP_REQ_POST, [path cStringUsingEncoding:NSUTF8StringEncoding]) == -1) {
         fprintf(stdout, "FAILED to make the request \n");
@@ -279,10 +279,11 @@ void nunja_http_request_done(struct evhttp_request *req, void *arg)
 
 static Nunja *sharedNunja = nil;
 
-+ (Nunja *) nunja {
-	if (!sharedNunja)
-		sharedNunja = [[ConcreteNunja alloc] init];
-	return sharedNunja;
++ (Nunja *) nunja
+{
+    if (!sharedNunja)
+        sharedNunja = [[ConcreteNunja alloc] init];
+    return sharedNunja;
 }
 
 + (void) setVerbose:(BOOL) v
@@ -292,100 +293,110 @@ static Nunja *sharedNunja = nil;
 
 + (BOOL) verbose {return verbose_nunja;}
 
-- (void) run {
-}
-
-- (int) bindToAddress:(NSString *) address port:(int) port {
-	return 0;
-}
-
-- (void) setDelegate:(id) d 
+- (void) run
 {
-}	
+}
 
-- (id) delegate {
-	return nil;
+- (int) bindToAddress:(NSString *) address port:(int) port
+{
+    return 0;
+}
+
+- (void) setDelegate:(id) d
+{
+}
+
+- (id) delegate
+{
+    return nil;
 }
 
 static NSMutableDictionary *mimeTypes = nil;
 
-+ (NSMutableDictionary *) mimeTypes {
-	return mimeTypes;
++ (NSMutableDictionary *) mimeTypes
+{
+    return mimeTypes;
 }
 
-+ (void) setMimeTypes:(NSMutableDictionary *) dictionary {
-	[dictionary retain];
-	[mimeTypes release];
-	mimeTypes = dictionary;
++ (void) setMimeTypes:(NSMutableDictionary *) dictionary
+{
+    [dictionary retain];
+    [mimeTypes release];
+    mimeTypes = dictionary;
 }
 
-+ (NSString *) mimeTypeForFileWithName:(NSString *) pathName {
-	if (mimeTypes) {
-		NSString *suffix = [[pathName componentsSeparatedByString:@"."] lastObject];
-		NSString *mimeType = [mimeTypes objectForKey:suffix]; 
-		if (mimeType) 
-			return mimeType;
-	} 
-	// default
-	return @"text/html; charset=utf-8";
++ (NSString *) mimeTypeForFileWithName:(NSString *) pathName
+{
+    if (mimeTypes) {
+        NSString *suffix = [[pathName componentsSeparatedByString:@"."] lastObject];
+        NSString *mimeType = [mimeTypes objectForKey:suffix];
+        if (mimeType)
+            return mimeType;
+    }
+    // default
+    return @"text/html; charset=utf-8";
 }
 
 @end
 
-int NunjaMain(int argc, const char *argv[], NSString *NunjaDelegateClassName) 
+int NunjaMain(int argc, const char *argv[], NSString *NunjaDelegateClassName)
 {
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-	
+
     int port = 5000;
     NSString *site = @".";
-	
-	BOOL localOnly = NO;
+
+    BOOL localOnly = NO;
     int i = 0;
     while (i < argc) {
         if (!strcmp(argv[i], "-s") ||
-			!strcmp(argv[i], "--site")) {
+        !strcmp(argv[i], "--site")) {
             if (++i < argc) {
                 site = [[[NSString alloc] initWithCString:argv[i]] autorelease];
             }
         }
         else if (!strcmp(argv[i], "-p") ||
-				 !strcmp(argv[i], "--port")) {
+        !strcmp(argv[i], "--port")) {
             if (++i < argc) {
                 port = atoi(argv[i]);
             }
         }
         else if (!strcmp(argv[i], "-l") ||
-				 !strcmp(argv[i], "--local")) {
+        !strcmp(argv[i], "--local")) {
             localOnly = YES;
         }
         else if (!strcmp(argv[i], "-v") ||
-				 !strcmp(argv[i], "--verbose")) {
+        !strcmp(argv[i], "--verbose")) {
             [Nunja setVerbose:YES];
         }
         i++;
     }
-	
-	Nunja *nunja = [Nunja nunja];
-	if (localOnly) {
-		[nunja bindToAddress:@"127.0.0.1" port:port];
-	}
-	else {
-		[nunja bindToAddress:@"0.0.0.0" port:port];
-	}
-	Class NunjaDelegateClass = NunjaDelegateClassName ?  NSClassFromString(NunjaDelegateClassName) : [NunjaDefaultDelegate class];		
-	id delegate = [[[NunjaDelegateClass alloc] init] autorelease];
-	[nunja setDelegate:delegate];
-	[delegate configureSite:site];
-	if ([delegate respondsToSelector:@selector(applicationDidFinishLaunching)]) {
-		[delegate applicationDidFinishLaunching];
-	}
-	if ([Nunja verbose]) {
-		[delegate dump];
-	}
-	NSLog(@"Nunjad is running on port %d", port);
-	[nunja run];
-	
+
+    Nunja *nunja = [Nunja nunja];
+    int status;
+    if (localOnly) {
+        status = [nunja bindToAddress:@"127.0.0.1" port:port];
+    }
+    else {
+        status = [nunja bindToAddress:@"0.0.0.0" port:port];
+    }
+    if (status != 0) {
+        NSLog(@"Unable to start service on port %d. Is another server running?", port);
+    }
+    else {
+        Class NunjaDelegateClass = NunjaDelegateClassName ?  NSClassFromString(NunjaDelegateClassName) : [NunjaDefaultDelegate class];
+        id delegate = [[[NunjaDelegateClass alloc] init] autorelease];
+        [nunja setDelegate:delegate];
+        [delegate configureSite:site];
+        if ([delegate respondsToSelector:@selector(applicationDidFinishLaunching)]) {
+            [delegate applicationDidFinishLaunching];
+        }
+        if ([Nunja verbose]) {
+            [delegate dump];
+        }
+        NSLog(@"Nunjad is running on port %d", port);
+        [nunja run];
+    }
     [pool drain];
     return 0;
 }
-
