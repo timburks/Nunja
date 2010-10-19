@@ -1,0 +1,9 @@
+#!/usr/local/bin/nush
+(load "Nunja")
+
+(set nunja (Nunja nunjaWithCommandLineArguments))
+
+(get "/"
+	"hello!")
+
+(nunja run)
