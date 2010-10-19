@@ -117,6 +117,9 @@ static void sig_pipe(int signo)
 
 - (void) run
 {
+	if (verbose_nunja && ([delegate respondsToSelector:@selector(dump)])) {
+		[delegate dump];
+	}	
     if (signal(SIGPIPE, sig_pipe) == SIG_ERR) {
         NSLog(@"failed to setup SIGPIPE handler.");
     }
@@ -385,7 +388,7 @@ int NunjaMain(int argc, const char *argv[], NSString *NunjaDelegateClassName)
     }
     else {
         Class NunjaDelegateClass = NunjaDelegateClassName ?  NSClassFromString(NunjaDelegateClassName) : [NunjaDefaultDelegate class];
-        id delegate = [[[NunjaDelegateClass alloc] init] autorelease];
+        id<NunjaDelegate> delegate = [[[NunjaDelegateClass alloc] init] autorelease];
         [nunja setDelegate:delegate];
         [delegate configureSite:site];
         if ([delegate respondsToSelector:@selector(applicationDidFinishLaunching)]) {

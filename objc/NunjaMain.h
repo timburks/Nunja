@@ -34,6 +34,9 @@
 
 // Handle a request. You probably won't need this if you use the NunjaDefaultDelegate.
 - (void) handleRequest:(NunjaRequest *)request;
+
+// Dump a description of the service
+- (void) dump;
 @end
 
 

@@ -92,6 +92,43 @@
                      `(((Nunja nunja) delegate)
                        setDefaultHandlerWithBlock:(do (REQUEST) ,@*body))))
 
+(class Nunja
+     (+ (id) nunjaWithCommandLineArguments is
+        (set argv ((NSProcessInfo processInfo) arguments))
+        (set argi 0)
+        
+        ;; if we're running as a nush script, skip the nush path
+        (if (/(.*)nush$/ findInString:(argv 0))
+            (set argi (+ argi 1)))
+        
+        ;; skip the program name
+        (set argi (+ argi 1))
+        
+        ;; the option(s) we need to set
+        (set port 3000)
+        (set localOnly NO)
+        
+        ;; process the remaining arguments
+        (while (< argi (argv count))
+               (case (argv argi)
+                     ("-p"        (set argi (+ argi 1)) (set port ((argv argi) intValue)))
+                     ("--port"    (set argi (+ argi 1)) (set port ((argv argi) intValue)))
+                     ("-l"        (set localOnly YES))
+                     ("--local"   (set localOnly YES))
+                     ("-v"        (Nunja setVerbose:YES))
+                     ("--verbose" (Nunja setVerbose:YES))
+                     (else (puts (+ "unknown option: " (argv argi)))
+                           (exit -1)))
+               (set argi (+ argi 1)))
+        
+        (set nunja (Nunja nunja))
+        (if (eq (nunja bindToAddress:(if localOnly (then "127.0.0.1") (else "0.0.0.0"))
+                       port:port) 0)
+            (then (puts (+ "Nunja is running on port " port)))
+            (else (puts (+ "Unable to start service on port " port ". Is another server running?")
+                        (exit -1))))
+        nunja))
+
 (Nunja setMimeTypes:
        (dict "ai"    "application/postscript"
              "asc"   "text/plain"
