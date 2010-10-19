@@ -38,7 +38,20 @@ by typing "nuke" in the top-level Nunja directory.
 
 AN EXAMPLE
 
-Nunja can be run from the command line using the "nunjad" 
+Let's start with the simplest possible Nunja app:
+
+==============================================
+#!/usr/local/bin/nush
+(load "Nunja")
+(set nunja (Nunja nunjaWithCommandLineArguments))
+
+(get "/"
+	"hello!")
+
+(nunja run)
+==============================================
+
+Nunja can also be run from the command line using the "nunjad" 
 (nunja daemon) script.  nunjad accepts arguments that can
 be used to specify a port and a site description. A sample
 site description is in the sample directory. To run it in
